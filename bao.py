@@ -15,17 +15,19 @@ def writeStock(stock, key):
     result = pd.DataFrame(data_list, columns=rs.fields)
 
     #### 结果集输出到csv文件 ####   
-    result.to_csv("D:\\stocks\\" + stock + key + ".csv", index=False)
+    result.to_csv("D:\\stocks\\" + stock + ".csv", index=False)
 
 ### 登陆系统 ####
 lg = bs.login()
 # 显示登陆返回信息
-dataset = pd.read_csv("D:\\stock\\all_stock.csv", encoding='gbk')
+dataset = pd.read_csv("D:\\stock_basic.csv", encoding='gbk')
+start = False
 for row in dataset.itertuples():
     if (row[1].startswith('sz.30') or row[1].startswith('sz.00') or row[1].startswith('sh.60')):
-        print(row[1])
-        writeStock(row[1], 'd')
+        if row[1].startswith('sz.000832'):
+            start = True
+        if start:
+            print(row[1])
+            writeStock(row[1], 'd')
 #### 登出系统 ####
 bs.logout()
-
-print((str(datetime.date.today())), datetime.date.today() - datetime.timedelta(days=356))
