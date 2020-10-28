@@ -18,7 +18,7 @@ for gap in [20]:
                 continue
             dataset = pd.read_csv("D:\\stocks\\" + file, encoding='gbk')
             num = dataset.to_numpy()
-            if num.shape[0] == 0 or num[-1,1] > 10:
+            if num.shape[0] == 0 or num[-1,1] > 10 or num[-1,-1] > 0:
                 continue
             x = []
             buy = 0

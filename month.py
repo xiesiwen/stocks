@@ -52,6 +52,8 @@ for file in os.listdir("D:\\stocksM"):
                     
 print(dd)
 
+
+
 # plt.figure()									#打印样本点
 # plt.scatter(range(len(rs)),rs)						#把x_data和y_data传进来
 # plt.show()

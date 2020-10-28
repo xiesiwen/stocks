@@ -6,13 +6,13 @@ import time
 import os 
 
 def comK2(i, j, ps):
-        k = (ps[j, 0] - ps[i, 0]) / (j - i)
-        b = ps[i, 1] - k*i
+        k = (ps[j] - ps[i]) / (j - i)
+        b = ps[i] - k*i
         return [k,b]
 def loss(ps, res):
     loss = 0
     for i in range(ps.shape[0]):
-        r = ps[i, 0] - (res[0] * i + res[1])
+        r = ps[i] - (res[0] * i + res[1])
         if r < 0:
             return 10000000
         loss += r
@@ -54,16 +54,39 @@ def getBestLineDown(ps):
                 minLoss = loss1
                 minLossRes = minRes
     return minLossRes
-    
-for file in os.listdir("D:\\stocks"):
-    if file.startswith('sz.30'):
-        continue
-    dataset = pd.read_csv("D:\\stocks\\"+file, encoding='gbk')
-    num = dataset.to_numpy()
-    if num.shape[0] == 0 or num[-1,1] > 10:
-        continue
-    for i in range(num.shape[0]):
-        if num[i,0].startswith('2019-02'):
-            res = getBestLineDown((num[i-60:i,1]/num[i-60,1] -1) * 100)
-            print((num[i-60:i,1]/num[i-60,1] -1) * 100)
-            break            
+
+LEN = 60   
+
+for mon in [x +1 for x in range(12)]:
+    mons = '-%02d-' % (mon)
+    c = 0
+    w2 = 0
+    w4 = 0
+    for file in os.listdir("D:\\stocks"):
+        if file.startswith('sz.30'):
+            continue
+        dataset = pd.read_csv("D:\\stocks\\"+file, encoding='gbk')
+        num = dataset.to_numpy()
+        if num.shape[0] < LEN or num[-1,-1] > 0:
+            continue
+        lastInd = -101
+        for i in range(num.shape[0]):
+            if mons in num[i,0] and i - lastInd > 100 and num[i,1] < 10:
+                lastInd = i
+                array = (num[i-LEN:i+1,1]/num[i-LEN,1] -1) * 100
+                x = [z for z in range(LEN+1)]
+                res = getBestLineDown(array)
+                g = (num[i,1]/num[i-LEN,1] -1) - (LEN*res[0] + res[1])/100
+                if res[0] > 0.15 and g < 0.05:
+                    # print(file[3:9], num[i,0])
+                    c += 1
+                    if i+20 < num.shape[0] and num[i + 20,1] > num[i,1]:
+                        w2 += 1
+                    if i+40 < num.shape[0] and num[i + 40,1] > num[i,1]:
+                        w4 += 1
+                    # plt.figure()									#打印样本点
+                    # plt.scatter(x,array)						#把x_data和y_data传进来
+                    # plt.plot(x, np.array(x)*res[0] + res[1])
+                    # plt.show()
+                # break
+    print(mon, c, w2/c, w4/c)            
