@@ -25,6 +25,7 @@ froms = [0 for x in range(0, 102)]
 timeGaps = [0 for x in range(0, 300)]
 zd = []
 cj = []
+dayGap = []
 for file in os.listdir("D:\\stocks"):
     if file.startswith('sz.30'):
         continue
@@ -49,6 +50,7 @@ for file in os.listdir("D:\\stocks"):
                 maxP = num[maxInd, 1]
                 min = startInd
                 if maxP > 10 and maxP > startPrice * 2 and maxInd - startInd > 20:
+                    dayGap.append(maxInd - startInd)
                     last = num[min, 1]
                     top10 = 0
                     q = 0
@@ -94,7 +96,10 @@ print(froms, sum(froms[0:30]))
 #         if j < len(timeGaps):
 #             s1 += timeGaps[j]
 #     print(i, s1/sum(timeGaps) * 100)
-
-# plt.figure()									#打印样本点
-# plt.scatter(range(len(cj)),cj)						#把x_data和y_data传进来
-# plt.show()
+l = [0,0,0,0,0]
+for i in dayGap:
+    l[int(i/50)] += 1   
+print(l, len(dayGap))
+plt.figure()									#打印样本点
+plt.bar(range(len(l)),l)						#把x_data和y_data传进来
+plt.show()
