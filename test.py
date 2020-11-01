@@ -57,11 +57,19 @@ def getBestLineDown(ps):
 
 LEN = 60   
 
-for mon in [x +1 for x in range(12)]:
+for mon in [x +1 for x in [1]]:
+    lasts = '-%02d-' % (mon -1)
     mons = '-%02d-' % (mon)
+    if mon == 1:
+        lasts = '-12-'
     c = 0
     w2 = 0
     w4 = 0
+    base = 0
+    base2 = 0
+    base4 = 0
+    ks = []
+    kms = []
     for file in os.listdir("D:\\stocks"):
         if file.startswith('sz.30'):
             continue
@@ -70,23 +78,46 @@ for mon in [x +1 for x in range(12)]:
         if num.shape[0] < LEN or num[-1,-1] > 0:
             continue
         lastInd = -101
+        
         for i in range(num.shape[0]):
-            if mons in num[i,0] and i - lastInd > 100 and num[i,1] < 10:
-                lastInd = i
-                array = (num[i-LEN:i+1,1]/num[i-LEN,1] -1) * 100
-                x = [z for z in range(LEN+1)]
-                res = getBestLineDown(array)
-                g = (num[i,1]/num[i-LEN,1] -1) - (LEN*res[0] + res[1])/100
-                if res[0] > 0.15 and g < 0.05:
-                    # print(file[3:9], num[i,0])
+            if  mons in num[i,0] and i > 1 and lasts in num[i-1,0] and num[i,1] < 10 and i > LEN:
+                base+=1
+                x = np.array([z for z in range(LEN + 1)])
+                y = num[i-LEN:i + 1,1]/num[i-LEN,1]
+                y = y.astype(np.float32)
+                res = np.polyfit(x, y,2)
+                kms.append(res[0])
+                if i+20 < num.shape[0] and num[i + 20,1] > num[i,1]:
+                    base2 += 1
+                    ks.append(res[0])
+                if i+40 < num.shape[0] and num[i + 40,1] > num[i,1]:
+                    base4 += 1
+                
+                # plt.figure()
+                # plt.scatter(x,num[i-LEN:i,1]/num[i-LEN,1])
+                # plt.plot(x,np.array(x) * z[0] + z[1])
+                # plt.show()
+                if res[0] > 0:
                     c += 1
                     if i+20 < num.shape[0] and num[i + 20,1] > num[i,1]:
                         w2 += 1
                     if i+40 < num.shape[0] and num[i + 40,1] > num[i,1]:
                         w4 += 1
-                    # plt.figure()									#打印样本点
-                    # plt.scatter(x,array)						#把x_data和y_data传进来
-                    # plt.plot(x, np.array(x)*res[0] + res[1])
-                    # plt.show()
-                # break
-    print(mon, c, w2/c, w4/c)            
+                    # plt.clf()
+                    # plt.scatter([z for z in range(LEN*2)],num[i-LEN-LEN:i,1])
+                    # plt.savefig('D:\\image\\'+file[3:9]+".png")
+                    
+                    # print(file[3:9],i+20 < num.shape[0] and num[i + 20,1] > num[i,1], i+40 < num.shape[0] and num[i + 40,1] > num[i,1])
+                break
+        # if lastInd > 0:
+        #     break
+    print(mon, c, w2/c, base2/base, w4/c, base4/base)  
+    plt.figure()
+    # print(ks)
+    plt.scatter(np.arange(len(ks)),ks)
+    plt.show()   
+
+    plt.figure()
+    # print(kms)
+    plt.scatter(np.arange(len(kms)),kms)
+    plt.show()   

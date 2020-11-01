@@ -26,6 +26,9 @@ timeGaps = [0 for x in range(0, 300)]
 zd = []
 cj = []
 dayGap = []
+downs = []
+ups = []
+pr = []
 for file in os.listdir("D:\\stocks"):
     if file.startswith('sz.30'):
         continue
@@ -49,7 +52,13 @@ for file in os.listdir("D:\\stocks"):
                 maxInd = num[startInd:j,1].argmax() + startInd
                 maxP = num[maxInd, 1]
                 min = startInd
-                if maxP > 10 and maxP > startPrice * 2 and maxInd - startInd > 20:
+                if maxP > 10 and maxP > startPrice * 1.5 and maxInd - startInd > 20 and startInd > 60:
+                    if '2020' in startDate or '2018' in startDate or '2019' in startDate and startInd > 480:
+                        hs = max([startInd-1200, 0])
+                        hmin = num[hs:startInd, 1].min()
+                        hmax = num[hs:startInd, 1].max()
+                        pp = (startPrice - hmin)/(hmax - hmin) * 100
+                        pr.append(pp)
                     dayGap.append(maxInd - startInd)
                     last = num[min, 1]
                     top10 = 0
@@ -100,6 +109,21 @@ l = [0,0,0,0,0]
 for i in dayGap:
     l[int(i/50)] += 1   
 print(l, len(dayGap))
+# plt.figure()									#打印样本点
+# plt.scatter(range(len(downs)),downs)						#把x_data和y_data传进来
+# plt.show()
+lin0 = 0
+lin10 = 0
+lin20 =0
+for x in pr:
+    if x < 0:
+        lin0+=1
+    if x < 15:
+        lin10 +=1
+    if x < 25:
+        lin20 += 1
+print(pr)
+print(lin0/len(pr),lin10/len(pr),lin20/len(pr))
 plt.figure()									#打印样本点
-plt.bar(range(len(l)),l)						#把x_data和y_data传进来
+plt.scatter(range(len(pr)),pr)						#把x_data和y_data传进来
 plt.show()
