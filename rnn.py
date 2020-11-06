@@ -73,7 +73,7 @@ cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_save_path,
                                                  save_best_only=True,
                                                  monitor='val_loss')
 
-history = model.fit(x_train, y_train, batch_size=64, epochs=50, validation_data=(x_test, y_test), validation_freq=1,
+history = model.fit(x_train, y_train, batch_size=64, epochs=3, validation_data=(x_test, y_test), validation_freq=1,
                     callbacks=[cp_callback])
 
 model.summary()
@@ -88,12 +88,6 @@ file.close()
 loss = history.history['loss']
 val_loss = history.history['val_loss']
 
-plt.plot(loss, label='Training Loss')
-plt.plot(val_loss, label='Validation Loss')
-plt.title('Training and Validation Loss')
-plt.legend()
-plt.show()
-
 ################## predict ######################
 # 测试集输入模型进行预测
 predicted_stock_price = model.predict(x_test)
@@ -102,14 +96,28 @@ predicted_stock_price = sc.inverse_transform(predicted_stock_price)
 # 对真实数据还原---从（0，1）反归一化到原始范围
 real_stock_price = sc.inverse_transform(test_set[60:])
 # 画出真实数据和预测数据的对比曲线
-plt.plot(real_stock_price, color='red', label='MaoTai Stock Price')
-plt.plot(predicted_stock_price, color='blue', label='Predicted MaoTai Stock Price')
+plt.plot(real_stock_price[0:10], color='red', label='MaoTai Stock Price')
+plt.plot(predicted_stock_price[0:10], color='blue', label='Predicted MaoTai Stock Price')
 plt.title('MaoTai Stock Price Prediction')
 plt.xlabel('Time')
 plt.ylabel('MaoTai Stock Price')
 plt.legend()
 plt.show()
-
+ps = []
+rs = []
+print(predicted_stock_price[0:10])
+print(real_stock_price[0:10])
+for i in range(1,len(predicted_stock_price)):
+    p = (predicted_stock_price[i,0]/real_stock_price[i-1,0] - 1) * 100
+    ps.append(p)
+    r = (real_stock_price[i,0]/real_stock_price[i-1,0] - 1) * 100
+    rs.append(r)
+print(ps[0:10])
+print(rs[0:10])
+# plt.plot(ps, color='red')
+# plt.plot(rs, color='blue')
+# plt.legend()
+# plt.show()
 ##########evaluate##############
 # calculate MSE 均方误差 ---> E[(预测值-真实值)^2] (预测值减真实值求平方后求均值)
 mse = mean_squared_error(predicted_stock_price, real_stock_price)
@@ -117,6 +125,6 @@ mse = mean_squared_error(predicted_stock_price, real_stock_price)
 rmse = math.sqrt(mean_squared_error(predicted_stock_price, real_stock_price))
 # calculate MAE 平均绝对误差----->E[|预测值-真实值|](预测值减真实值求绝对值后求均值）
 mae = mean_absolute_error(predicted_stock_price, real_stock_price)
-print('均方误差: %.6f' % mse)
-print('均方根误差: %.6f' % rmse)
-print('平均绝对误差: %.6f' % mae)
+# print('均方误差: %.6f' % mse)
+# print('均方根误差: %.6f' % rmse)
+# print('平均绝对误差: %.6f' % mae)
