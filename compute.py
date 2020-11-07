@@ -1,129 +1,95 @@
 import numpy as np
 import pandas as pd
 import os 
+import tensorflow as tf
 import matplotlib.pyplot as plt
-LOW = 1
-R = 1.12
-LEN = 120
-LOG = False
-MIN = 0.003
+from sklearn.preprocessing import MinMaxScaler
 
-wins = 0
-s = 0
-rs = 0
-i = 0
-z = []
-dso = {}
-ds = {}
-for i in range(21):
-    ds[str(2000 + i)] = []
-    dso[str(2000 + i)] = []
-ns = [0 for x in range(0, 14)]
-zs = [0 for x in range(0, 32)] 
-ins = [0 for x in range(0, 102)]
-froms = [0 for x in range(0, 102)]
-timeGaps = [0 for x in range(0, 300)]
-zd = []
-cj = []
-dayGap = []
-downs = []
-ups = []
-pr = []
+GAP1 = 60
+GAP2 = 60
+all = 0
+g20 = 0
+g30 = 0
+xs = []
+ys = []
+yes = []
+xs_test = []
+ys_test = []
+sc = MinMaxScaler(feature_range=(0, 1)) 
+c = 100
 for file in os.listdir("D:\\stocks"):
     if file.startswith('sz.30'):
         continue
+    # print(file)
+    c -= 1
+    if c== 0:
+        break
     dataset = pd.read_csv("D:\\stocks\\" + file, encoding='gbk')
     num = dataset.to_numpy()
     if num.shape[0] == 0:
         continue
-    thisK = num[0,0][0:4]
-    startDate = ''
-    startPrice = 0
-    startInd = 0
-    cs = 0
-    for j in range(num.shape[0]):
-        if num[j,0].startswith(thisK) and j < num.shape[0] - 1:
-            continue
-        else :
-            startInd = num[cs:j,1].argmin() + cs
-            startPrice = num[startInd, 1]
-            if startPrice < 10:
-                startDate = num[startInd, 0]
-                maxInd = num[startInd:j,1].argmax() + startInd
-                maxP = num[maxInd, 1]
-                min = startInd
-                if maxP > 10 and maxP > startPrice * 1.5 and maxInd - startInd > 20 and startInd > 60:
-                    if '2020' in startDate or '2018' in startDate or '2019' in startDate and startInd > 480:
-                        hs = max([startInd-1200, 0])
-                        hmin = num[hs:startInd, 1].min()
-                        hmax = num[hs:startInd, 1].max()
-                        pp = (startPrice - hmin)/(hmax - hmin) * 100
-                        pr.append(pp)
-                    dayGap.append(maxInd - startInd)
-                    last = num[min, 1]
-                    top10 = 0
-                    q = 0
-                    for s in range(min + 1, j):
-                        if (num[s, 1]/last - 1)*100 > 9.9 :
-                            top10 += 1
-                            if q == 0:
-                                q = s - min
-                        last = num[s, 1]
-                    if top10 > 100:
-                        top10 = 99
-                    ins[top10] += 1
-                    if q > 100:
-                        q = 99
-                    froms[q] += 1
-                    ns[int(num[min, 0][5:7])] += 1
-                    zs[int(num[min, 0][8:10])] += 1
-                    if  "-01-" in num[min, 0]:
-                        dso[thisK].append([file, num[min, 0], num[min, 1], num[min, 0][8:10]])
-                        for z in range(min, min +22):
-                            if z + 1 < num.shape[0] and "-01-" in num[z,0] and num[z + 1,1]/num[z,1] > 1.099 and num[min,1] < 10:
-                                ds[thisK].append([file, num[min, 0], num[min, 1], num[min, 0][8:10]])
-                                break
-                    startDate = ''
-                    startPrice = 0
-                    timeGaps[maxInd - startInd] += 1
-            cs = j
-            thisK = num[j,0][0:4]
+    for i in range(0,num.shape[0],5):
+        
+        if i + GAP1 + GAP2 < num.shape[0]:
+            all += 1
+            if num[i,0].startswith('2020'):
+                xs_test.append((num[i:i+GAP1,1]/num[i,1] - 1) * 100)
+            else:
+                xs.append((num[i:i+GAP1,1]/num[i,1] - 1) * 100)
+            b = num[i+GAP1,1]
+            s = num[i+GAP1 + GAP2,1]
+            if s / b > 1.2:
+                g20 += 1
+            if s/b > 1.3:
+                g30 += 1
+                if num[i,0].startswith('2020'):
+                    ys_test.append(1)
+                else:
+                    ys.append(1)
+                    yes.append((num[i:i+GAP1,1]/num[i,1] - 1) * 100)
+            else:
+                if num[i,0].startswith('2020'):
+                    ys_test.append(0)
+                else:
+                    ys.append(0)
 
-c = 0
-for i in ds:
-    c += len(ds[i])
-    print(i, len(ds[i]), len(dso[i]))
-print(c)
-print(ns, sum(ns))
-print(zs, sum(zs[0:15]))
-print(ins)
-print(froms, sum(froms[0:30]))
-# print(timeGaps)
-# for i in range(1,13):
-#     s1 = 0
-#     for j in range (i *20, len(timeGaps)):
-#         if j < len(timeGaps):
-#             s1 += timeGaps[j]
-#     print(i, s1/sum(timeGaps) * 100)
-l = [0,0,0,0,0]
-for i in dayGap:
-    l[int(i/50)] += 1   
-print(l, len(dayGap))
-# plt.figure()									#打印样本点
-# plt.scatter(range(len(downs)),downs)						#把x_data和y_data传进来
-# plt.show()
-lin0 = 0
-lin10 = 0
-lin20 =0
-for x in pr:
-    if x < 0:
-        lin0+=1
-    if x < 15:
-        lin10 +=1
-    if x < 25:
-        lin20 += 1
-print(pr)
-print(lin0/len(pr),lin10/len(pr),lin20/len(pr))
-plt.figure()									#打印样本点
-plt.scatter(range(len(pr)),pr)						#把x_data和y_data传进来
-plt.show()
+yes = [val for val in yes for i in range(5)]
+xs.extend(yes)
+ys.extend(np.ones(len(yes)).tolist())
+print(len(xs), len(ys), sum(ys)/len(ys))
+xs = np.array(xs)
+ys = np.array(ys)
+shuffle_ix = np.random.permutation(np.arange(len(xs)))
+xs = xs[shuffle_ix]
+ys = ys[shuffle_ix]
+xs_test = np.array(xs_test)
+ys_test = np.array(ys_test)
+model = tf.keras.Sequential([
+    # tf.keras.layers.Flatten(input_shape=(1,60)),
+    tf.keras.layers.Dense(20,input_shape=(60,),activation="relu"),
+    tf.keras.layers.Dropout(0.5),
+    tf.keras.layers.Dense(2,activation="softmax")
+])
+# checkpoint_save_path = "g60-30"
+# if os.path.exists(checkpoint_save_path + '.index'):
+#     print('-------------load the model-----------------')
+#     model.load_weights(checkpoint_save_path)
+
+#设置训练参数
+model.compile(
+    optimizer=tf.keras.optimizers.Adam(0.005),
+    loss="sparse_categorical_crossentropy",
+    metrics=['accuracy']
+)
+
+# cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_save_path,
+#                                                  save_weights_only=True,
+#                                                  save_best_only=True,
+#                                                  monitor='val_loss')
+print(xs.shape,ys.shape, g30, g30/len(xs))
+xs = xs.astype('float64')
+xs_test = xs_test.astype('float64')
+#训练并查看训练进度
+history = model.fit(xs,ys,epochs=500,validation_data=(xs_test, ys_test), validation_freq=1)
+model.save('the_save_model.h5')
+model.summary()
