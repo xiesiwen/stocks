@@ -18,6 +18,7 @@ for i in range(5000):
 
 xs = np.array(arrays1)
 ys = np.array(arrays2)
+print(xs.shape)
 shuffle_ix = np.random.permutation(np.arange(len(xs)))
 xs = xs[shuffle_ix]
 ys = ys[shuffle_ix]
@@ -30,7 +31,7 @@ model = tf.keras.Sequential([
 
 #设置训练参数
 model.compile(
-    optimizer="adam",
+    optimizer=tf.keras.optimizers.Adam(0.001),
     loss="sparse_categorical_crossentropy",
     metrics=['accuracy']
 )

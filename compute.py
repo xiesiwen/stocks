@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
 
 GAP1 = 60
-GAP2 = 60
+GAP2 = 20
 all = 0
 g20 = 0
 g30 = 0
@@ -40,7 +40,7 @@ for file in os.listdir("D:\\stocks"):
             s = num[i+GAP1 + GAP2,1]
             if s / b > 1.2:
                 g20 += 1
-            if s/b > 1.3:
+            if s/b > 1.2:
                 g30 += 1
                 if num[i,0].startswith('2020'):
                     ys_test.append(1)
@@ -77,7 +77,7 @@ model = tf.keras.Sequential([
 
 #设置训练参数
 model.compile(
-    optimizer=tf.keras.optimizers.Adam(0.005),
+    optimizer=tf.keras.optimizers.Adam(0.001),
     loss="sparse_categorical_crossentropy",
     metrics=['accuracy']
 )
@@ -85,7 +85,8 @@ model.compile(
 # cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_save_path,
 #                                                  save_weights_only=True,
 #                                                  save_best_only=True,
-#                                                  monitor='val_loss')
+#                                
+#                   monitor='val_loss')
 print(xs.shape,ys.shape, g30, g30/len(xs))
 xs = xs.astype('float64')
 xs_test = xs_test.astype('float64')
