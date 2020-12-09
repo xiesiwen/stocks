@@ -5,6 +5,26 @@ import matplotlib.pyplot as plt
 import json
 import mplfinance as mpf
 
+macd_12 = {}
+macd_26 = {}
+def getMacd(file, num, ind, count):
+    macd = {}
+    if count == 12:
+        macd = macd_12
+    if count == 26:
+        macd = macd_26
+    if macd.get(file) is None:
+        macd[file] = {}
+    ms = macd[file]
+    if ind <= count:
+        ms[ind] = num[0:ind,1].mean()
+        return ms[ind]
+    else :
+        if ms.get(ind) is None:
+            res = getMacd(file, num, ind - 1, count) * (count-1)/(count+1) + num[ind,1]*2/(count+1)
+            ms[ind] = res
+            return res
+        else: return ms[ind]
 def pr(*arg):
     if False:
         print(arg)
@@ -122,11 +142,12 @@ rs = [0 for x in range(20)]
 for file in os.listdir("D:\\stocks-all"):
     dataset = pd.read_csv("D:\\stocks-all\\" + file, encoding='gbk')
     num = dataset.to_numpy()
-    # c += 1
-    # if c > 1500:
-    #     break
+    
     if num.shape[0] <= L:
         continue
+    c += 1
+    if c > 0:
+        break
     for i in range(10, 11):
         x = num[i:i+L]
         h = (int)(L/2)
