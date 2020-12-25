@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import time
 import os
+import operator
 
 def compute(num, n):
     # print(len(num), n)
@@ -44,6 +45,9 @@ for file in os.listdir("D:\\stocks"):
 res = {}
 for k in ranks.keys():
     res[k] = np.array(ranks[k])/np.array(nums[k])
-sortedDist = sorted(res.items(), key=operator.itemgetter(1)[-1], reverse=False)
-
-# print(res[0], res[1])
+sortedDist = sorted(res.items(), key = lambda x:x[1][-1],reverse = True)
+print(sortedDist[0:5])
+for i in range(20):
+    plt.clf()
+    plt.plot(np.arange(len(sortedDist[i][1])), sortedDist[i][1])
+    plt.savefig('C:/Users/xiesiwen/Desktop/stocks/images/' + sortedDist[i][0] + '.png')
