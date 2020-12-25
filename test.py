@@ -21,6 +21,7 @@ for i in range(len(num)):
 
 ranks = {}
 nums = {}
+dates = {}
 lines = [5,13,21,34,55,89,144,233]
 LEN = 200
 for file in os.listdir("D:\\stocks"):
@@ -36,6 +37,7 @@ for file in os.listdir("D:\\stocks"):
         continue
     for i in range(LEN,-1,-1):
         tmp = num[0:len(num)-i]
+        dates[i] = tmp[-1,0]
         if len(tmp) < 60:
             continue
         nums[key][LEN - i] += 1
@@ -46,8 +48,8 @@ res = {}
 for k in ranks.keys():
     res[k] = np.array(ranks[k])/np.array(nums[k])
 sortedDist = sorted(res.items(), key = lambda x:x[1][-1],reverse = True)
-print(sortedDist[0:5])
+print(dates)
 for i in range(20):
     plt.clf()
-    plt.plot(np.arange(len(sortedDist[i][1])), sortedDist[i][1])
-    plt.savefig('C:/Users/xiesiwen/Desktop/stocks/images/' + sortedDist[i][0] + '.png')
+    plt.scatter(np.arange(len(sortedDist[i][1])), sortedDist[i][1])
+    plt.savefig('C:/Users/xiesiwen/Desktop/stocks/images/point-' + sortedDist[i][0] + '.png')
