@@ -9,63 +9,68 @@ def findNextJack(num, ind, up):
     lMin = min(num[ind,1], num[ind,2])
     lMax = max(num[ind,1], num[ind,2])
     may = ind + 1
+    res = 0
     change = 0
     cc = 0
-    for i in range(ind, len(num)):
+    for i in range(ind + 2, len(num)):
         iMin = min(num[i,1], num[i,2])
         iMax = max(num[i,1], num[i,2])
-        print(num[i,0], iMin, iMax)
-        # if (lMin - iMin) * (lMax-iMax) <= 0:
-        #     if up:
-        #         iMax = max(lMax,iMax)
-        #         iMin = max(lMin, iMin)
-        #     else:
-        #         iMax = min(lMax,iMax)
-        #         iMin = min(lMin, iMin)
-        #     print("merge")
-        # else :
-        #     if up: 
-        #         if lMax > iMax:
-        #             print("trun down " + str(cc) + " " + str(max(num[may,1], num[may,2],num[may-1,1], num[may-1,2],num[may-2,1], num[may-2,2])) + " " + str(max(min(num[i,1], num[i,2]),min(num[i -1,1], num[i-1,2]),min(num[i-2,1], num[i-2,2]))))
-        #             if cc >= 2 and max(num[may,1], num[may,2],num[may-1,1], num[may-1,2],num[may-2,1], num[may-2,2]) < max(min(num[i,1], num[i,2]),min(num[i -1,1], num[i-1,2]),min(num[i-2,1], num[i-2,2])):
-        #                 change +=1
-        #                 cc = 0
-        #                 up = not up
-        #                 may = i
-        #             elif change == 1:
-        #                 print("clean reset to down")
-        #                 change -= 1
-        #                 may = ind + 1
-        #                 cc = 3
-        #                 up = not up
-        #         else:
-        #             cc += 1
-        #             print("up continum cc " + str(cc))
-        #     elif not up:
-        #         if lMax < iMax:
-        #             print("trun up " + str(cc))
-        #             if cc >= 2 and max(num[i,1], num[i,2],num[i-1,1], num[i-1,2],num[i-2,1], num[i-2,2]) < max(min(num[may,1], num[may,2]),min(num[may -1,1], num[may-1,2]),min(num[may-2,1], num[may-2,2])):
-        #                 change +=1
-        #                 cc = 0
-        #                 up = not up
-        #                 may = i
-        #             elif change == 1:
-        #                 print("clean reset to up")
-        #                 change -= 1
-        #                 may = ind + 1
-        #                 cc = 3
-        #                 up = not up
-        #         else:
-        #             cc += 1
-        #             print("down continum cc " + str(cc))
-        # if change == 2 or (change == 1 and cc >= 4):
-        #     return [may, up]
-        # lMin = iMin
-        # lMax = iMax
+        # print(num[i,0], iMin, iMax, lMin, lMax)
+        if (lMin - iMin) * (lMax-iMax) <= 0:
+            if up:
+                iMax = max(lMax,iMax)
+                iMin = max(lMin, iMin)
+            else:
+                iMax = min(lMax,iMax)
+                iMin = min(lMin, iMin)
+            # print("merge")
+        else :
+            if up: 
+                if lMax > iMax:
+                    # print("trun down " + str(cc) + " " + str(max(num[may,1], num[may,2],num[may-1,1], num[may-1,2],num[may-2,1], num[may-2,2])) + " " + str(max(min(num[i,1], num[i,2]),min(num[i -1,1], num[i-1,2]),min(num[i-2,1], num[i-2,2]))))
+                    if cc >= 3 and max(num[may,1], num[may,2],num[may-1,1], num[may-1,2],num[may-2,1], num[may-2,2]) < max(min(num[i,1], num[i,2]),min(num[i -1,1], num[i-1,2]),min(num[i-2,1], num[i-2,2])):
+                        change +=1
+                        cc = 0
+                        up = not up
+                        if change == 1:
+                            res = i
+                        may = i
+                    elif change == 1:
+                        # print("clean reset to down")
+                        change -= 1
+                        may = ind + 1
+                        cc = 3
+                        up = not up
+                else:
+                    cc += 1
+                    # print("up continum cc " + str(cc))
+            elif not up:
+                if lMax < iMax:
+                    # print("trun up " + str(cc))
+                    if cc >= 3 and max(num[i,1], num[i,2],num[i-1,1], num[i-1,2],num[i-2,1], num[i-2,2]) < max(min(num[may,1], num[may,2]),min(num[may -1,1], num[may-1,2]),min(num[may-2,1], num[may-2,2])):
+                        change +=1
+                        cc = 0
+                        up = not up
+                        if change == 1:
+                            res = i
+                        may = i
+                    elif change == 1:
+                        # print("clean reset to up")
+                        change -= 1
+                        may = ind + 1
+                        cc = 3
+                        up = not up
+                else:
+                    cc += 1
+                    # print("down continum cc " + str(cc))
+        if change == 2 or (change == 1 and cc >= 4):
+            return [res, up]
+        lMin = iMin
+        lMax = iMax
     return [0, up]
 
 for file in os.listdir("D:\\stocks"):
-    if not file.startswith('sh.601816'):
+    if file.startswith('sz.30'):
         continue
     dataset = pd.read_csv("D:\\stocks\\" + file, encoding='gbk')
     num = dataset.to_numpy()
@@ -78,11 +83,13 @@ for file in os.listdir("D:\\stocks"):
     up = True
     while(True):
         res = findNextJack(num, ind, up)
-        up = not up
+        
         if res[0] == 0:
             break
         else: 
+            up = not up
             ind = res[0] - 1
             jacks.append(num[ind,0])
-    
-    print(file, ind, jacks)
+        
+    if len(jacks) == 3:
+        print(file, ind, jacks)

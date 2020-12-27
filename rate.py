@@ -1,40 +1,27 @@
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import tushare as ts
 import baostock as bs
-import os 
+import pandas as pd
 
+# 登陆系统
+lg = bs.login()
+# 显示登陆返回信息
+print('login respond error_code:'+lg.error_code)
+print('login respond  error_msg:'+lg.error_msg)
 
-for s in range(5):
-    all = 0
-    win = 0
-    year = s + 2016
-    files = []
-    for file in os.listdir("D:\\stocks"):
-        if file.startswith('sz.30'):
-            continue
-        dataset = pd.read_csv("D:\\stocks\\" + file, encoding='gbk')
-        num = dataset.to_numpy()
-        if num.shape[0] == 0:
-            continue
-        for i in range(num.shape[0]):
-            if str(year)+"-01" in num[i,0]:
-                minPrice = num[i:i+45,1].min()
-                minInd = i + 45
-                hDate = max([0, i - 1200])
-                if hDate < i and minPrice < 15:
-                    hmin = num[hDate:i, 1].min()
-                    hmax = num[hDate:i, 1].max()
-                    if hmax > hmin and (minPrice - hmin) / (hmax-hmin) <0.10 and minInd< min([i+250, num.shape[0]-1]):
-                        if num[minInd: min([i+250, num.shape[0]-1]),1].max() > minPrice * 1.5:
-                            win += 1
-                            files.append(file)
-                        all += 1
-                break
-    print(year, win, all, win/all)
-    # if year == 2018:
-    #     print(files)
+# 获取行业分类数据
+rs = bs.query_stock_industry()
+# rs = bs.query_stock_basic(code_name="浦发银行")
+print('query_stock_industry error_code:'+rs.error_code)
+print('query_stock_industry respond  error_msg:'+rs.error_msg)
 
+# 打印结果集
+industry_list = []
+while (rs.error_code == '0') & rs.next():
+    # 获取一条记录，将记录合并在一起
+    industry_list.append(rs.get_row_data())
+result = pd.DataFrame(industry_list, columns=rs.fields)
+# 结果集输出到csv文件
+result.to_csv("D:/stock_industry.csv", encoding="gbk", index=False)
+print(result[0:100])
 
-    
+# 登出系统
+bs.logout()

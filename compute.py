@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import os 
 import tensorflow as tf
-import matplotlib.pyplot as plt
+import .pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
 from sklearn import linear_model
 line = linear_model.LinearRegression()
@@ -33,6 +33,7 @@ ds = [0 for x in range(0,33)]
 endds = [0 for x in range(0,33)]
 fs = [0 for x in range(0,11)]
 ks = []
+cs = 0
 for file in os.listdir("D:\\stocks"):
     if file.startswith('sz.30') :
         continue
@@ -51,6 +52,7 @@ for file in os.listdir("D:\\stocks"):
         minInd = num[startInd:end,1].argmin() + startInd
         maxInd = num[startInd:end,1].argmax() + startInd
         emmonths[int(num[minInd,0][5:7])] += 1
+        cs += 1
         if maxInd < minInd or num[maxInd,1] < num[minInd,1] * 1.5:
             startInd = i
             startYear = num[i,0][0:4]
@@ -80,7 +82,7 @@ for file in os.listdir("D:\\stocks"):
         #         k = 8
         #     ks.append(k)
 s = sum(days)
-print(s)
+print(s, cs)
 print(days, np.array(days)/s)
 print(rates, np.array(rates)/s)
 print(months, np.array(months)/s)

@@ -31,7 +31,7 @@ model = tf.keras.Sequential([
 
 #设置训练参数
 model.compile(
-    optimizer=tf.keras.optimizers.Adam(0.001),
+    optimizer="adam",
     loss="sparse_categorical_crossentropy",
     metrics=['accuracy']
 )

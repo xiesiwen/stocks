@@ -8,7 +8,7 @@ from sklearn.cluster import KMeans
 import joblib
 
 GAP1 = 60
-GAP2 = 40
+GAP2 = 20
 g20 = 0
 g30 = 0
 sh = []
@@ -21,7 +21,6 @@ xs_test = []
 ys_test = []
 files = []
 dates = []
-sc = MinMaxScaler(feature_range=(0, 1))
 for file in os.listdir("D:/stocks"):
     if file.startswith('sz.30'):
         continue
@@ -31,7 +30,7 @@ for file in os.listdir("D:/stocks"):
     num = dataset.to_numpy()
     if num.shape[0] == 0:
         continue
-    for i in range(num.shape[0]/4, num.shape[0], 10):
+    for i in range(int(num.shape[0]/4), num.shape[0], 5):
         if i + GAP1 + GAP2 < num.shape[0]:
             if num[i, 0].startswith('2020'):
                 xs_test.append((num[i:i+GAP1, 1]/num[i, 1] - 1) * 100)
@@ -42,9 +41,13 @@ for file in os.listdir("D:/stocks"):
                 xs.append(ps)
                 sh.append(num[i:i+GAP1,1])
                 files.append((file,num[i, 0]))
-                if num[i+GAP1+GAP2,1] > num[i+GAP1, 1] * 1.2 :
+                c = 0
+                for x in range(i+GAP1,i+GAP1+GAP2):
+                    if num[x,1] > num[i + GAP1,1]:
+                        c += 1
+                if c > GAP2 * 0.75:
                     ys.append(1)
-                else : ys.append(0)
+                else: ys.append(0)
                 if num[i+GAP1+GAP2,1] > num[i+GAP1, 1] * 1.3 :
                     ys1.append(1)
                 else : ys1.append(0)
@@ -63,7 +66,7 @@ ys1 = ys2[shuffle_ix]
 ys2 = ys2[shuffle_ix]
 points = np.array(xs)
 
-num_clusters = 50
+num_clusters = 30
 kms = KMeans(n_clusters=num_clusters).fit(xs)
 joblib.dump(kms, 'C:/Users/gentl/Desktop/k50.pkl')
 yys = kms.predict(xs)
@@ -92,11 +95,12 @@ for i in range(len(js)):
         y1 = sum(js1[i])/len(js1[i])
         y2 = sum(js2[i])/len(js2[i])
     print(i, y0, len(js[i]), y1, len(js1[i]) ,y2, len(js2[i]))
-    if y0 > 0.7:
+    if y0 > 0.6:
         win0 += len(js[i])
-        print(fss[i])
-    if y1 > 0.7:
+        # print(fss[i])
+        print('GKD!')
+    if y1 > 0.6:
         win1 += len(js1[i])
-    if y2 > 0.7:
+    if y2 > 0.6:
         win2 += len(js2[i])
 print(cs, win0, win0/cs, win1, win1/cs, win2, win2/cs)
