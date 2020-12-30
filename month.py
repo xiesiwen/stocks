@@ -99,12 +99,15 @@ def getGap(d, g):
     z = 0
     
     jacks = findJacks(d,mInd)
+    lastInd = 0
     for i in range(1,len(jacks[0]), 1):
         b = np.where(d == jacks[0][i][0])
         ind = b[0][0]
+        lastInd = ind
         if d[ind,1] < getM(d[0:ind,1], g) * R[g]:
             z +=1
     if len(jacks[2]) > 0 and  d[jacks[2][0],1] < getM(d[0:jacks[2][0],1], g) * R[g]:
+        lastInd = jacks[2][0]
         z += 1
     if openLog:
         print('z is',z)
@@ -114,6 +117,8 @@ def getGap(d, g):
         m = getM(d[0:z,1], g)
         if d[z,1] < m:
             c+=1
+        if z > lastInd and d[z,1] < m * R[g]:
+            return -1
     return c
 
 def setDir(filepath):
@@ -152,14 +157,10 @@ for file in os.listdir(PATHO):
         continue
     
     ns = num[:,1]
-    if len(ns) - ns.argmin() < 40 or ns[-1] >= 25 or len(ns) < 120:
+    if len(ns) - ns.argmin() < 60 or ns[-1] >= 25 or len(ns) < 120:
         continue
     ns = np.array(ns/ns.min(),dtype='float32')
-    x = np.array(np.arange(len(ns)-ns.argmin()),dtype='float32')*0.005
-    res2 = np.polyfit(x, ns[ns.argmin():], 1)
     c += 1
-    ks += res2[0]
-    # res3 = np.polyfit(np.array(np.arange(10),dtype='float32')*0.005, ns[len(ns)-10:len(ns)], 1)
     if file[3:9] not in mp.keys():
         continue
     key = mp[file[3:9]]
@@ -169,13 +170,11 @@ for file in os.listdir(PATHO):
     if g3 >= 0 and g3 / (len(ns)-ns.argmin()) <= 0.25:
         g6 = getGap(num, 60)
         if g6 >= 0:
-            hs[key].append([file,g3/(len(ns)-ns.argmin()),g6/(len(ns)-ns.argmin()), key, mpn[file[3:9]], ns[-1]/getM(ns, 30) - 1])
+            hs[key].append([file,g3/(len(ns)-ns.argmin()),g6/(len(ns)-ns.argmin()), len(ns) - ns.argmin(), key, mpn[file[3:9]], ns[-1]/getM(ns, 30) - 1])
 c1 = 0
-t = ks/c
 xs = []
 for k in hs.keys():
     a = hs[k]    
-    # a = [i for i in a if i[3] > t]
     a.sort(key=lambda b:b[1] * 2 + b[2])
     c1 += len(a)
     if len(a) > 0:
