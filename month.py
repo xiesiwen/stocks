@@ -152,7 +152,7 @@ for file in os.listdir(PATHO):
         continue
     
     ns = num[:,1]
-    if len(ns) - ns.argmin() < 60 or ns[-1] >= 30:
+    if len(ns) - ns.argmin() < 40 or ns[-1] >= 25 or len(ns) < 120:
         continue
     ns = np.array(ns/ns.min(),dtype='float32')
     x = np.array(np.arange(len(ns)-ns.argmin()),dtype='float32')*0.005
@@ -169,16 +169,20 @@ for file in os.listdir(PATHO):
     if g3 >= 0 and g3 / (len(ns)-ns.argmin()) <= 0.25:
         g6 = getGap(num, 60)
         if g6 >= 0:
-            hs[key].append([file,g3/(len(ns)-ns.argmin()),g6/(len(ns)-ns.argmin()), res2[0]])
+            hs[key].append([file,g3/(len(ns)-ns.argmin()),g6/(len(ns)-ns.argmin()), key, mpn[file[3:9]], ns[-1]/getM(ns, 30) - 1])
 c1 = 0
 t = ks/c
+xs = []
 for k in hs.keys():
     a = hs[k]    
-    a = [i for i in a if i[3] > t]
+    # a = [i for i in a if i[3] > t]
     a.sort(key=lambda b:b[1] * 2 + b[2])
     c1 += len(a)
     if len(a) > 0:
         print(k, a, len(a))
-        for x in a:
-            print(mpn[x[0][3:9]])
+        xs.extend(a)
+xs.sort(key=lambda b:b[1] * 2 + b[2])
+print('-------------------\n')
+for x in xs:
+    print(x)
 print(c1)
