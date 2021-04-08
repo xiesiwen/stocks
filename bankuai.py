@@ -3,6 +3,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 LEN = 5
 L2 = 15
+class Inc:
+    month = 0
+    minInd = 0
+    maxInd = 0
+    def __init__(self, mon, mi):
+        self.month = mon
+        self.minInd = mi
+
 def getM(d, g):
     if len(d) >= g:
         return d[len(d) -g : len(d)-1,1].mean()
@@ -73,21 +81,35 @@ def getL():
         print(x[0], x[1][0], x[1][1], '\n')
     print(len(r), c)
     return r
-r5 = getL()
-LEN = 10
-r10 = getL()
-z = 0
-c = 0
-a,b=getDataSet('sh.000001.csv')
-for x1 in r5:
-    for x2 in r10:
-        if x1[0] == x2[0]:
-            print(x1[0], x1[1][1])
-            if x1[1][1] > b[len(b)-1,1]/b[len(b)-L2,1]:
-                c += 1
-            z += 1
-            break
-print(z, c, c/z, b[len(b)-1,1]/b[len(b)-L2,1])
+# r5 = getL()
+# LEN = 10
+# r10 = getL()
+# z = 0
+# c = 0
+# a,b=getDataSet('sh.000001.csv')
+# for x1 in r5:
+#     for x2 in r10:
+#         if x1[0] == x2[0]:
+#             print(x1[0], x1[1][1])
+#             if x1[1][1] > b[len(b)-1,1]/b[len(b)-L2,1]:
+#                 c += 1
+#             z += 1
+#             break
+# print(z, c, c/z, b[len(b)-1,1]/b[len(b)-L2,1])
+
+mp = {}
+names = {}
+data = pd.read_excel("D:/stock/hangye.xlsx", usecols = [0, 1, 4]).to_numpy()
+for i in range(len(data)):
+    ss = data[i,2].split('-')
+    if len(ss) >= 2:
+        key = ss[1]
+        if mp.get(key) == None:
+            mp[key] = []
+        ss = data[i,0].lower().split(".")
+        file = ss[1]+"."+ss[0]+".csv"
+        names[file] = data[i, 1]
+        mp[key].append(file)
 # scores = {}
 # ds = {}
 # LEN = 20
@@ -97,8 +119,7 @@ print(z, c, c/z, b[len(b)-1,1]/b[len(b)-L2,1])
 #         c = 0
 #         scs = 0
 #         for j in mp[i]:
-#             ss = j[0].lower().split(".")
-#             file = ss[1]+"."+ss[0]+".csv"
+#             file = j
 #             try:
 #                 if file not in ds:
 #                     dataset = pd.read_csv("D:/stocks-today/" + file, engine='python').to_numpy()
@@ -122,16 +143,45 @@ print(z, c, c/z, b[len(b)-1,1]/b[len(b)-L2,1])
 # for z in r:
 #     print(z)
 
-    # for x in z[1]:
-    #     if x > 6.5:        
-    #         ss[z[0]] = z[1]
-    # plt.plot(np.arange(len(z[1])),z[1])
-    # plt.show()
-# zs = {}
-# for i in range(LEN):
-#     r = (sorted(scores.items(), key=lambda d: d[1][i], reverse=True))
-#     for ind,z in enumerate(r):
-#         if z[0] not in zs:
-#             zs[z[0]] = 0
-#         zs[z[0]] += ind
-# print((sorted(zs.items(), key=lambda d: d[1])))
+hang = {}
+sh001 = []
+sh1DS = pd.read_csv("D:/stocks-2020/sh.000001.csv", engine='python').to_numpy()
+m1 = sh1DS[0,1]
+mon = 1
+for i in range(1, len(sh1DS)):
+    if int(sh1DS[i,0][5:7]) != mon:
+        sh001.append(round(sh1DS[i-1, 1]/m1, 3))
+        m1 = sh1DS[i, 1]  
+        mon = int(sh1DS[i,0][5:7])
+sh001.append(round(sh1DS[i-1, 1]/m1, 3))
+for key in mp:
+    gg = {}
+    for j in mp[key]:
+        file = j
+        try:
+            dataset = pd.read_csv("D:/stocks-2020/" + file, engine='python').to_numpy()
+            if len(dataset) < len(sh1DS):
+                continue
+            mon = 1
+            gg[file] = [Inc(mon, dataset[0,1])]
+            for i in range(1, len(dataset)):
+                if int(dataset[i,0][5:7]) != mon:
+                    gg[file][-1].maxInd = dataset[i-1, 1]  
+                    mon = int(dataset[i,0][5:7])
+                    gg[file].append(Inc(mon, dataset[i, 1]))
+            gg[file][-1].maxInd = dataset[-1, 1] 
+        except IOError:
+            qqq = 1
+    hang[key] = []
+    for m in range(1,13):
+        s = Inc(m, 0)
+        for x in gg:
+            s.minInd += gg[x][m-1].minInd
+            s.maxInd += gg[x][m-1].maxInd
+        hang[key].append(round(s.maxInd/s.minInd, 3))
+for i in range(0,12):
+    r = (sorted(hang.items(), key=lambda d: d[1][i], reverse=True))
+    print(i+1, sh001[i])
+    for j in range(0,8):
+        print(r[j][0], r[j][1][i])
+    print()
