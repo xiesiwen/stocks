@@ -1,34 +1,55 @@
-import tensorflow as tf
-try:
-    import tensorflow.python.keras as keras
-except:
-    import tensorflow.keras as keras
-from tensorflow.python.keras import layers
+import numpy as np
+import pandas as pd
+import os 
 
-mnist = keras.datasets.mnist
-(x_train,y_train),(x_test,y_test) = mnist.load_data()
-x_train, x_test = x_train/255.0, x_test/255.0  # 除以 255 是为了归一化。
-
-# Sequential 用于建立序列模型
-# Flatten 层用于展开张量，input_shape 定义输入形状为 28x28 的图像，展开后为 28*28 的张量。
-# Dense 层为全连接层，输出有 128 个神经元，激活函数使用 relu。
-# Dropout 层使用 0.2 的失活率。
-# 再接一个全连接层，激活函数使用 softmax，得到对各个类别预测的概率。
-model = keras.Sequential()
-model.add(layers.Flatten(input_shape=(28,28)))
-model.add(layers.Dense(128,activation="relu"))
-model.add(layers.Dropout(0.2))
-model.add(layers.Dense(10,activation="softmax"))
-
-# 优化器选择 Adam 优化器。
-# 损失函数使用 sparse_categorical_crossentropy，
-# 还有一个损失函数是 categorical_crossentropy，两者的区别在于输入的真实标签的形式，
-# sparse_categorical 输入的是整形的标签，例如 [1, 2, 3, 4]，categorical 输入的是 one-hot 编码的标签。
-model.compile(optimizer="adam",
-              loss="sparse_categorical_crossentropy",
-              metrics=['accuracy'])
-
-# fit 用于训练模型，对训练数据遍历一次为一个 epoch，这里遍历 5 次。
-# evaluate 用于评估模型，返回的数值分别是损失和指标。
-model.fit(x_train,y_train,epochs=5)
-model.evaluate(x_test,y_test)
+LEN = 10
+def jacks(num):
+    tops = [-LEN]
+    bottoms = [-LEN]
+    for i in range(LEN, len(num) - LEN):
+        if num[i,4] >= num[i- LEN: i+LEN, 4].max():
+            if i > tops[-1] + LEN:
+                tops.append(i)
+        if num[i,3] <= num[i- LEN: i+LEN, 3].min():
+            if i > bottoms[-1] + LEN:
+                bottoms.append(i)
+    return tops[1:], bottoms[1:]
+names = {}
+data = pd.read_excel("D:/stock/hangye.xlsx", usecols = [0, 1, 4]).to_numpy()
+for i in range(len(data)):
+    ss = data[i,2].split('-')
+    if len(ss) >= 2:
+        key = ss[2]
+        ss = data[i,0].lower().split(".")
+        file = ss[1]+"."+ss[0]+".csv"
+        names[file] = data[i, 1]
+c = 0
+for file in os.listdir("D:\\stocks-today"):
+    if file.startswith('sz.30') :
+        continue
+    dataset = pd.read_csv("D:\\stocks-today\\" + file, encoding='gbk')
+    num = dataset.to_numpy()
+    if num.shape[0] == 0:
+        continue
+    if num[-1,1] > 20:
+        continue
+    mInd = num[:,1].argmin()
+    tops, btms = jacks(num[mInd:])
+    if len(tops) < 2 or len(btms) < 2 or len(num) - mInd < 40:
+        continue
+    p = True
+    if len(btms) > 1:
+        for i in range(max(1, len(btms)-3), len(btms)):
+            if num[mInd+btms[i], 3] < num[mInd+btms[i-1], 3]*0.95:
+                p = False
+                break
+    for i in range(max(1, len(tops)-3), len(tops)):
+        if num[mInd+tops[i], 4] < num[mInd+tops[i-1], 4]*0.95:
+            p = False
+            break
+    if '002015' in file:
+        print(tops, btms, num[np.array(tops)+mInd], num[np.array(btms)+mInd], p)
+    if p and num[mInd+tops[-1], 1] >= num[mInd+tops[-2], 1]*1.08 and 'ST' not in names[file]:
+        print(file, names[file])
+        c += 1
+print(c)
