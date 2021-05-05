@@ -47,10 +47,11 @@ for file in os.listdir("./stock-today"):
         z = num[mInd+tops[i], 4] / num[mInd+tops[i-1], 4]
         if z < 0.95 or z > 1.8:
             p = False
-    #         break
-    # if '002015' in file:
-    #     print(tops, btms, num[np.array(tops)+mInd], num[np.array(btms)+mInd], p)
-    if p and num[mInd+tops[-1], 1] >= num[mInd+tops[-2], 1]*1.08 and num[-1,1] > num[mInd+btms[-1],1]*0.95:
+            break
+    # if '603268' in file:
+    #     print(tops, btms, num[np.array(tops)+mInd], '\n', num[np.array(btms)+mInd], p)
+    #     break
+    if p and num[mInd+tops[-1], 1] >= num[mInd+tops[-2], 1]*1.08 and num[mInd+tops[-1], 4] >=  num[mInd:,4].max() and num[-1,1] > num[mInd+btms[-1],1]*0.95:
         print(file)
         c += 1
 print(c)

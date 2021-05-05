@@ -3,6 +3,12 @@ import pandas as pd
 import os 
 
 LEN = 10
+def getM(d, g):
+    if len(d) >= g:
+        return d[len(d) -g : len(d)-1].mean()
+    if len(d) == 0:
+        return 0
+    return d.mean()
 def jacks(num):
     tops = [-LEN]
     bottoms = [-LEN]
@@ -31,7 +37,7 @@ for file in os.listdir("D:\\stocks-today"):
     num = dataset.to_numpy()
     if num.shape[0] == 0:
         continue
-    if num[-1,1] > 20:
+    if num[-1,1] > 20 or num[-1,1] < getM(num, 250) or 'ST' in names[file]:
         continue
     mInd = num[:,1].argmin()
     tops, btms = jacks(num[mInd:])
@@ -47,9 +53,33 @@ for file in os.listdir("D:\\stocks-today"):
         if num[mInd+tops[i], 4] < num[mInd+tops[i-1], 4]*0.95:
             p = False
             break
-    if '002015' in file:
-        print(tops, btms, num[np.array(tops)+mInd], num[np.array(btms)+mInd], p)
-    if p and num[mInd+tops[-1], 1] >= num[mInd+tops[-2], 1]*1.08 and 'ST' not in names[file]:
+    if p and num[mInd+tops[-1], 1] >= num[mInd+tops[-2], 1]*1.08:
+        print(file, names[file])
+        c += 1
+print(c)
+c = 0
+G = 60
+for file in os.listdir("D:\\stocks-today"):
+    if file.startswith('sz.30') :
+        continue
+    dataset = pd.read_csv("D:\\stocks-today\\" + file, encoding='gbk')
+    num = dataset.to_numpy()
+    if num.shape[0] == 0:
+        continue
+    num = num[:,1]
+    if num[-1] > 20 or num[-1] < getM(num, 250) or len(num) < 120 or 'ST' in names[file]:
+        continue
+    z = 0
+    for i in range(len(num)-G, len(num)):
+        if num[i] >= getM(num[:i], 250):
+            z += 1
+    if z < G*0.9:
+        continue
+    z = 0
+    for i in range(len(num)-2*G, len(num)-G):
+        if num[i] <= getM(num[:i], 250):
+            z += 1
+    if z > G*0.9:
         print(file, names[file])
         c += 1
 print(c)
