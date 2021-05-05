@@ -37,7 +37,7 @@ for file in os.listdir("D:\\stocks-today"):
     num = dataset.to_numpy()
     if num.shape[0] == 0:
         continue
-    if num[-1,1] > 20 or num[-1,1] < getM(num, 250) or 'ST' in names[file]:
+    if num[-1,1] > 20 or num[-1,1] < getM(num[:,1], 250) or 'ST' in names[file]:
         continue
     mInd = num[:,1].argmin()
     tops, btms = jacks(num[mInd:])
@@ -67,7 +67,7 @@ for file in os.listdir("D:\\stocks-today"):
     if num.shape[0] == 0:
         continue
     num = num[:,1]
-    if num[-1] > 20 or num[-1] < getM(num, 250) or len(num) < 120 or 'ST' in names[file]:
+    if num[-1] > 20 or num[-1] < getM(num, 250) or len(num) < 180 or 'ST' in names[file]:
         continue
     z = 0
     for i in range(len(num)-G, len(num)):
@@ -75,11 +75,13 @@ for file in os.listdir("D:\\stocks-today"):
             z += 1
     if z < G*0.9:
         continue
-    z = 0
     for i in range(len(num)-2*G, len(num)-G):
-        if num[i] <= getM(num[:i], 250):
-            z += 1
-    if z > G*0.9:
-        print(file, names[file])
-        c += 1
+        z = 0
+        for j in range(i - G, i):
+            if num[j] <= getM(num[:j], 250):
+                z += 1
+        if z > G*0.9:
+            print(file, names[file])
+            c += 1
+            break
 print(c)
