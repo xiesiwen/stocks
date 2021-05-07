@@ -16,9 +16,13 @@ def jacks(num):
         if num[i,4] >= num[i- LEN: i+LEN, 4].max():
             if i > tops[-1] + LEN:
                 tops.append(i)
+            elif num[i,4] > num[tops[-1], 4]:
+                tops[-1] = i
         if num[i,3] <= num[i- LEN: i+LEN, 3].min():
             if i > bottoms[-1] + LEN:
                 bottoms.append(i)
+            elif bottoms[-1] > 0 and num[i,3] < num[bottoms[-1], 3]:
+                bottoms[-1] = i
     return tops[1:], bottoms[1:]
 names = {}
 data = pd.read_excel("D:/stock/hangye.xlsx", usecols = [0, 1, 4]).to_numpy()
@@ -50,10 +54,14 @@ for file in os.listdir("D:\\stocks-today"):
                 p = False
                 break
     for i in range(max(1, len(tops)-3), len(tops)):
-        if num[mInd+tops[i], 4] < num[mInd+tops[i-1], 4]*0.95:
+        g = num[mInd+tops[i], 4] / num[mInd+tops[i-1], 4]
+        if g < 0.95 or g > 1.8:
             p = False
             break
-    if p and num[mInd+tops[-1], 1] >= num[mInd+tops[-2], 1]*1.08:
+    # if '603225' in file:
+    #     print(tops, btms, num[np.array(tops)+mInd], '\n' ,num[np.array(btms)+mInd], p)
+    #     break
+    if p and num[mInd+tops[-1], 1] >= num[mInd+tops[-2], 1]*1.08 and num[-1,1] > num[mInd+btms[-1],1]*0.95 and 'ST' not in names[file]:
         print(file, names[file])
         c += 1
 print(c)

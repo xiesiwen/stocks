@@ -69,10 +69,14 @@ class AnalysisIndustry:
         return (html)
 
     def get_all_data(self):
-        with open('all_industry_data.txt', 'w') as f:
-            for code in self.industry_codes:
+        with open('hys.txt', 'r', encoding='UTF-8') as f2:
+            ls = f2.readlines()
+            for l in ls:
+                s = l.replace('\n','').split(' ')
+                code = s[0]
                 data = self.get_one_data(str(code))
-                f.write(str(code) + "\n" + str(data) + "\n\n")
+                with open('hangye/'+ s[1]+'.txt', 'w') as f:
+                    f.write(str(data))
                 time.sleep(5)
                 print(code)
 
@@ -83,6 +87,14 @@ class AnalysisIndustry:
 
 if __name__ == '__main__':
     s = AnalysisIndustry()
-    s.get_indusrty_codes()
-    # print(s.get_one_data('881112'))
-    s.get_all_data()
+    # s.get_indusrty_codes()
+    # s.get_all_data()
+    # print(s.get_one_data('881131'))
+    with open('all_industry_data.txt', 'r', encoding='UTF-8') as f1:
+        fs = f1.read()
+        with open('hys.txt', 'r', encoding='UTF-8') as f2:
+            ls = f2.readlines()
+            for l in ls:
+                s = l.replace('\n','').split(' ')[0]
+                if s not in fs:
+                    print(s)

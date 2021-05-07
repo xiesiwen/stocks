@@ -10,7 +10,24 @@ class Inc:
     def __init__(self, mon, mi):
         self.month = mon
         self.minInd = mi
-
+def rank(r):
+    i1 = 0
+    i2 = 0
+    i3 = 0
+    for i in r:
+        if i > 0 and i < 15:
+            i1 += 1
+        if i >= 15 and i < 30:
+            i2 += 1
+        if i >= 30:
+            i3 += 1
+        if i < 0 and i > -15:
+            i1 -= 1
+        if i <= -15 and i > -30:
+            i2 -= 1
+        if i <= -30:
+            i3 -= 1
+    return round((i1+i2*2+i3*3)/len(r), 3)
 def getM(d, g):
     if len(d) >= g:
         return d[len(d) -g : len(d)-1,1].mean()
@@ -174,14 +191,14 @@ for key in mp:
             qqq = 1
     hang[key] = []
     for m in range(1,13):
-        s = Inc(m, 0)
+        rate = []
         for x in gg:
-            s.minInd += gg[x][m-1].minInd
-            s.maxInd += gg[x][m-1].maxInd
-        hang[key].append(round(s.maxInd/s.minInd, 3))
+            rate.append(round((gg[x][m-1].maxInd/gg[x][m-1].minInd - 1) * 100, 2))
+        hang[key].append(rank(rate))
 for i in range(0,12):
     r = (sorted(hang.items(), key=lambda d: d[1][i], reverse=True))
-    print(i+1, sh001[i])
+    print(i+1)
+    c = 0
     for j in range(0,8):
         print(r[j][0], r[j][1][i])
     print()

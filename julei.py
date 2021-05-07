@@ -11,7 +11,6 @@ F = 0
 s1 = (np.where(num == dataStart))[0][0]
 s2 = (np.where(num == dataEnd))[0][0]
 F = num[s1,3] * (num[s1+1,2] - num[s1,3]) + num[s2,2] * (num[s2,4] - num[s2,2])
-print(num[s1], num[s2])
 for i in range(s1 + 1, s2):
     F += num[i,2] * (num[i+1, 2] - num[i,2])
 print(F)

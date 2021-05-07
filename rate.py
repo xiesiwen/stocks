@@ -6,6 +6,13 @@ import shutil
 import matplotlib.pyplot as plt
 import json
 
+def setDir(filepath):
+    if not os.path.exists(filepath):
+        os.mkdir(filepath)
+    else:
+        shutil.rmtree(filepath)
+        os.mkdir(filepath)
+
 def getM(d, g):
     if len(d) >= g:
         return d[len(d) -g : len(d)-1].mean()
@@ -26,7 +33,7 @@ def getGap(d, g):
         m = getM(d[0:z,1], g)
         if d[z,1] < m:
             c+=1
-    return c
+    return round(c/(len(d)-s),2)
 
 def setDir(filepath):
     if not os.path.exists(filepath):
@@ -59,42 +66,41 @@ scores = {}
 ds = {}
 LEN = 22
 GAP = 0
-lines = [5,13,21,34,55,89,144,233]
-for z in range( 0,LEN, 1):
-    for i in mp:
-        c = 0
-        scs = 0
-        for j in mp[i]:
-            ss = j[0].lower().split(".")
-            file = ss[1]+"."+ss[0]+".csv"
+# lines = [5,13,21,34,55,89,144,233]
+# for z in range( 0,LEN, 1):
+#     for i in mp:
+#         c = 0
+#         scs = 0
+#         for j in mp[i]:
+#             ss = j[0].lower().split(".")
+#             file = ss[1]+"."+ss[0]+".csv"
             
-            try:
-                if file not in ds:
-                    dataset = pd.read_csv("D:/stocks-today/" + file, engine='python').to_numpy()
-                    ds[file] = dataset
-                # dataset = ds[file][0:len(ds[file]) - z + 1]
-                dataset = ds[file][0:len(ds[file]) - (LEN - z - 1) - GAP]
-                # dataset = ds[file]
-                if len(dataset) < 60:
-                    continue
-                c += 1
-                for l in lines:
-                    if dataset[-1,1] > getM2(dataset, l):
-                        scs += 1
-            except IOError:
-                qqq = 1
-        if scores.get(i) == None:
-            scores[i] = []
-        scores[i].append(round(scs/c,2))
-r = (sorted(scores.items(), key=lambda d: 0.35*np.mean(d[1]) + 0.65*np.mean(d[1][len(d[1]) - 10:len(d[1])]), reverse=True))
-ss = []
-for z in r[0:25]:
-    print(z, np.mean(z[1]))
-    ss.append(z[0])
-print(ss)
+#             try:
+#                 if file not in ds:
+#                     dataset = pd.read_csv("D:/stocks-today/" + file, encoding='gbk').to_numpy()
+#                     ds[file] = dataset
+#                 # dataset = ds[file][0:len(ds[file]) - z + 1]
+#                 dataset = ds[file][0:len(ds[file]) - (LEN - z - 1) - GAP]
+#                 # dataset = ds[file]
+#                 if len(dataset) < 60:
+#                     continue
+#                 c += 1
+#                 for l in lines:
+#                     if dataset[-1,1] > getM2(dataset, l):
+#                         scs += 1
+#             except IOError:
+#                 qqq = 1
+#         if scores.get(i) == None:
+#             scores[i] = []
+#         scores[i].append(round(scs/c,2))
+# r = (sorted(scores.items(), key=lambda d: 0.35*np.mean(d[1]) + 0.65*np.mean(d[1][len(d[1]) - 10:len(d[1])]), reverse=True))
+# ss = []
+# for z in r[0:25]:
+#     print(z, np.mean(z[1]))
+#     ss.append(z[0])
+# print(ss)
 
 PATHO = "D:/stocks-today"
-PATH = "D:/AndroidStudioProjects/aStocks/app/src/main/assets/stocks/chan"
 hrs = ss
 c=0
 ks = 0
@@ -102,32 +108,37 @@ thisMonth = 0
 win = 0
 aa = 0
 ds = []
+setDir("D:/image")
 for file in os.listdir(PATHO):
-    if not (file.startswith('sh.60') or file.startswith('sz.00')):
+    if file.startswith('sz.30'):
         continue
     try:
         dataset = pd.read_csv(PATHO + "/" + file, encoding='gbk')
     except:
         continue
     num = dataset.to_numpy()
-    if num.shape[0] == 0 or num[-1,-1] != 0:
+    if num.shape[0] == 0:
         continue
     ns = num[:,1]
-    if len(ns) == 0 or len(ns) - ns.argmin() < 60 or ns[-1] >= 25 or len(ns) < 120:
+    if len(ns) == 0 or len(ns) - ns.argmin() < 30 or ns[-1] >= 25 or len(ns) < 120:
         continue
     ns = np.array(ns/ns.min(),dtype='float32')
     g3 = getGap(num,30)
     n1 = getM(ns, 30)
     n2 = getM(ns, 60)
-    if ns[-1] < n1 * 0.85 or ns[-1] < n2 * 0.9:
+    if ns[-1] < n1 * 0.85 or ns[-1] < n2 * 0.85:
         continue
-    if g3 >= 0 and g3 / (len(ns)-ns.argmin()) <= 0.25:
+    if g3 <= 0.3:
         g6 = getGap(num, 60)
-        if g6 >= 0:
-            ds.append([file, g3/(len(ns)-ns.argmin()),g6/(len(ns)-ns.argmin()), names[file], ns[-1]/getM(ns, 30) - 1])
-
+        if g6 <= 0.3 and 'ST' not in names[file]:
+            ds.append([file, names[file], len(ns)-ns.argmin(), g3,g6, round(ns[-1]/getM(ns, 30) - 1,3)])
+            y = num[num[:,1].argmin():,1]
+            x = np.arange(len(y))
+            plt.clf()
+            plt.plot(x, y)
+            plt.savefig('D:/image/'+names[file]+".png")
 ds.sort(key=lambda b:b[-1])
 print(ds)
 for z in ds:
-    print(z[0], z[-2] ,z[-1])
+    print(z[1], z[2], z[-1])
 print(len(ds))
