@@ -33,20 +33,32 @@ def getGap(d, g):
         m = getM(d[0:z,1], g)
         if d[z,1] < m:
             c+=1
-    return round(c/(len(d)-s),2)
-
-def setDir(filepath):
-    if not os.path.exists(filepath):
-        os.mkdir(filepath)
-    else:
-        shutil.rmtree(filepath)
-        os.mkdir(filepath)
-
-
+    return round(c/(len(d)-mInd),2)
 def getM2(d, g):
     if len(d) >= g:
         return d[len(d) -g : len(d)-1,1].mean()
     return d[:,1].mean()
+
+LEN = 15
+def jacks(num, p):
+    tops = [-LEN]
+    bottoms = [-LEN]
+    for i in range(LEN, len(num) - LEN):
+        if '2021-01-22' == num[i,0] and p:
+            print(num[i,4], num[i- LEN: i+LEN, 4])
+        if num[i,4] >= num[i- LEN: i+LEN, 4].max():
+            if p:
+                print(tops, i)
+            if i > tops[-1] + LEN:
+                tops.append(i)
+            elif num[i,4] > num[tops[-1], 4]:
+                tops[-1] = i
+        if num[i,3] <= num[i- LEN: i+LEN, 3].min():
+            if i > bottoms[-1] + LEN:
+                bottoms.append(i)
+            elif bottoms[-1] > 0 and num[i,3] < num[bottoms[-1], 3]:
+                bottoms[-1] = i
+    return tops[1:], bottoms[1:]
 
 mp = {}
 names = {}
@@ -64,7 +76,6 @@ for i in range(len(data)):
 
 scores = {}
 ds = {}
-LEN = 22
 GAP = 0
 # lines = [5,13,21,34,55,89,144,233]
 # for z in range( 0,LEN, 1):
@@ -108,7 +119,6 @@ thisMonth = 0
 win = 0
 aa = 0
 ds = []
-setDir("D:/image")
 for file in os.listdir(PATHO):
     if file.startswith('sz.30'):
         continue
@@ -126,19 +136,15 @@ for file in os.listdir(PATHO):
     g3 = getGap(num,30)
     n1 = getM(ns, 30)
     n2 = getM(ns, 60)
-    if ns[-1] < n1 * 0.85 or ns[-1] < n2 * 0.85:
+    if ns[-1] < n1 * 0.85 or ns[-1] < n2 * 0.85 or len(ns)-ns.argmin() < 60:
         continue
-    if g3 <= 0.3:
+    top, btm = jacks(num[ns.argmin():], False)
+    if g3 <= 0.3 and len(top) >= 2:
         g6 = getGap(num, 60)
-        if g6 <= 0.3 and 'ST' not in names[file]:
+        g250 = getGap(num, 250)
+        if g6 <= 0.3 and g250 <= 0.3 and 'ST' not in names[file] and ns[-1]/getM(ns, 60) - 1 >= -0.11 and ns[-1]/getM(ns, 30) - 1 >= -0.11:
             ds.append([file, names[file], len(ns)-ns.argmin(), g3,g6, round(ns[-1]/getM(ns, 30) - 1,3)])
-            y = num[num[:,1].argmin():,1]
-            x = np.arange(len(y))
-            plt.clf()
-            plt.plot(x, y)
-            plt.savefig('D:/image/'+names[file]+".png")
 ds.sort(key=lambda b:b[-1])
-print(ds)
 for z in ds:
-    print(z[1], z[2], z[-1])
+    print(z)
 print(len(ds))
