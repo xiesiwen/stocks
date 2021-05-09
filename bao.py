@@ -14,7 +14,7 @@ def setDir(filepath):
 def writeStock(stock, key):
     rs = bs.query_history_k_data_plus(stock,
         "date,close,open,low,high,volume",
-        start_date = str(datetime.date.today() + datetime.timedelta(days=-300)), end_date=str(datetime.date.today()),
+        start_date = '2018-01-01', end_date=str(datetime.date.today()),
         frequency=key, adjustflag="2")
     #### 打印结果集 ####
     data_list = []
@@ -25,7 +25,7 @@ def writeStock(stock, key):
     result = pd.DataFrame(data_list, columns=rs.fields)
 
     #### 结果集输出到csv文件 ####   
-    result.to_csv(path + stock + ".csv", index=False)
+    result.to_csv(path + "\\"  + stock + ".csv", index=False)
 
 def patch(stock, key):
     start = str(datetime.date.today() + datetime.timedelta(days=-500))
@@ -78,9 +78,10 @@ year = "today"
 path = "D:\\stocks"+"-"+year
 # setDir(path)
 ### 登陆系统 ####
+
 lg = bs.login()
 # 显示登陆返回信息
-dataset = pd.read_csv("./stock/all_stock.csv", encoding='gbk')
+dataset = pd.read_csv("D:/stock/all_stock.csv", encoding='gbk')
 for row in dataset.itertuples():
     if row[1].startswith('sh.60') or row[1].startswith('sh.68') or row[1].startswith('sz.00') or row[1].startswith('sz.30'):
         print(row[1])

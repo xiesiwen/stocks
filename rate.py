@@ -22,7 +22,7 @@ def getM(d, g):
 R = {30:0.9, 60:0.95}
 def getGap(d, g):
     s = 0
-    mInd = d[:,1].argmin()
+    mInd = d[len(d) - G:,1].argmin() + len(ns) - G
     for i in range(mInd, len(d)):
         if d[i, 1] >= getM(d[0:i,1],g):
             s = i
@@ -62,6 +62,7 @@ def jacks(num, p):
 
 mp = {}
 names = {}
+hys = {}
 data = pd.read_excel("D:/stock/hangye.xlsx", usecols = [0, 1, 4]).to_numpy()
 for i in range(len(data)):
     ss = data[i,2].split('-')
@@ -70,6 +71,7 @@ for i in range(len(data)):
     names[f] = data[i,1]
     if len(ss) >= 2:
         key = ss[0] + "-" + ss[1]
+        hys[f] = key
         if mp.get(key) == None:
             mp[key] = []
         mp[key].append(data[i])
@@ -119,7 +121,10 @@ thisMonth = 0
 win = 0
 aa = 0
 ds = []
+ds2 = {}
+G = 150
 for file in os.listdir(PATHO):
+    pr = '601003' in file
     if file.startswith('sz.30'):
         continue
     try:
@@ -130,21 +135,32 @@ for file in os.listdir(PATHO):
     if num.shape[0] == 0:
         continue
     ns = num[:,1]
-    if len(ns) == 0 or len(ns) - ns.argmin() < 30 or ns[-1] >= 25 or len(ns) < 120:
+    mInd = ns[len(ns) - G:].argmin() + len(ns) - G
+    if len(ns) == 0 or len(ns) - mInd < 40 or ns[-1] >= 25 or len(ns) < 120:
         continue
-    ns = np.array(ns/ns.min(),dtype='float32')
+    ns = np.array(ns,dtype='float32')
     g3 = getGap(num,30)
     n1 = getM(ns, 30)
     n2 = getM(ns, 60)
-    if ns[-1] < n1 * 0.85 or ns[-1] < n2 * 0.85 or len(ns)-ns.argmin() < 60:
+    if ns[-1] < n1 * 0.85 or ns[-1] < n2 * 0.85:
         continue
-    top, btm = jacks(num[ns.argmin():], False)
+    top, btm = jacks(num[mInd:], False)
     if g3 <= 0.3 and len(top) >= 2:
         g6 = getGap(num, 60)
         g250 = getGap(num, 250)
+        if file not in names.keys():
+            names[file] = 'todo'
+            hys[file] = 'todo'
         if g6 <= 0.3 and g250 <= 0.3 and 'ST' not in names[file] and ns[-1]/getM(ns, 60) - 1 >= -0.11 and ns[-1]/getM(ns, 30) - 1 >= -0.11:
-            ds.append([file, names[file], len(ns)-ns.argmin(), g3,g6, round(ns[-1]/getM(ns, 30) - 1,3)])
+            ds.append([file, names[file], len(ns) - mInd, g3,g6, round(ns[-1]/getM(ns, 30) - 1,3)])
+            if hys[file] not in ds2.keys():
+                ds2[hys[file]] = []
+            ds2[hys[file]].append(file)
 ds.sort(key=lambda b:b[-1])
+res = sorted(ds2.items(), key=lambda item:len(item[1]), reverse=True)
 for z in ds:
     print(z)
 print(len(ds))
+for x in res:
+    if len(x[1]) >= len(res[9][1]):
+        print(x)
