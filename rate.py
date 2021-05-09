@@ -146,6 +146,10 @@ for file in os.listdir(PATHO):
         continue
     top, btm = jacks(num[mInd:], False)
     if g3 <= 0.3 and len(top) >= 2:
+        if len(btm) >= 2 and num[btm[-1],1] < num[top[0],1] * 0.9:
+            continue
+        if len(btm) < 2 and num[-1,1] < num[top[0],1] * 0.9:
+            continue
         g6 = getGap(num, 60)
         g250 = getGap(num, 250)
         if file not in names.keys():
