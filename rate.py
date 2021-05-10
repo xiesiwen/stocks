@@ -39,6 +39,80 @@ def getM2(d, g):
         return d[len(d) -g : len(d)-1,1].mean()
     return d[:,1].mean()
 
+def pr(*arg):
+    if False:
+        print(arg)
+
+def findJacks(num, ind):
+    ps = []
+    up = True
+    lMin = num[ind,3]
+    lMax = num[ind,4]
+    jacks= []
+    for i in range(ind, len(num)):
+        ps.append([num[i,3], num[i,4], i])
+    topJack = []
+    bottomJack = [2]
+    if len(ps) <= 4:
+        return [jacks,topJack,bottomJack]
+    lMin = ps[2][0]
+    lMax = ps[2][1]
+    up = True
+    findUpJack = True
+    LG = 4
+    for i in range(3, len(ps)):
+        if (ps[i][0] - lMin) * (ps[i][1] - lMax) <= 0:
+            pr("merge", num[ps[i][-1],0],num[i,3], lMin, num[i,4], lMax)
+            if up:
+                lMin = max(lMin, ps[i][0])
+                lMax = max(lMax, ps[i][1])
+            else:
+                lMin = min(lMin, ps[i][0])
+                lMax = min(lMax, ps[i][1])
+            continue
+        if up and ps[i][1] < lMax:
+            pr("find top", num[ps[i][-1],0])
+            if len(bottomJack) == 0:
+                topJack.append(i)
+            else:
+                pr(i - bottomJack[-1] >= LG, not findUpJack, num[ps[i-2][-1],0], num[ps[bottomJack[-1]-2][-1],0], min(ps[bottomJack[-1]-2][0], ps[i][0]),  max(ps[bottomJack[-1]-2][1], ps[bottomJack[-1]][1]))
+                if i - bottomJack[-1] >= LG and not findUpJack and min(ps[i-2][0], ps[i][0]) > max(ps[bottomJack[-1]-2][1], ps[bottomJack[-1]][1]):
+                    m = ps[bottomJack[-1]][0]
+                    j = bottomJack[-1]
+                    pr("confirm bottom")
+                    jacks.append(num[ps[j][2] - 1])
+                    findUpJack = True
+                    bottomJack = []
+                    topJack = [i]
+                else :
+                    if len(topJack) > 0:
+                        if ps[i-1][1] > ps[topJack[0] - 1][1]:
+                            topJack = [i]
+                    else: topJack = [i]
+            up = False
+        elif not up and ps[i][1] > lMax:
+            pr("find bottom", num[ps[i][-1],0])
+            if len(topJack) == 0:
+                bottomJack.append(i)
+            else:
+                if i - topJack[-1] >= LG and findUpJack and max(ps[i-2][1], ps[i][1]) < min(ps[topJack[-1]-2][0], ps[topJack[-1]][0]):
+                    m = ps[topJack[-1]][1]
+                    j = topJack[-1]
+                    jacks.append(num[ps[j][2] - 1])
+                    findUpJack = False
+                    topJack = []
+                    bottomJack = [i]
+                else :
+                    if len(bottomJack) > 0:
+                        if ps[i-1][0] < ps[bottomJack[0]-1][0]:
+                            bottomJack = [i]
+                            pr("set bottom jack",)
+                    else: bottomJack = [i]
+            up = True
+        lMin = ps[i][0]
+        lMax = ps[i][1]
+    return jacks, topJack, bottomJack
+
 LEN = 15
 def jacks(num, p):
     tops = [-LEN]
@@ -59,6 +133,35 @@ def jacks(num, p):
             elif bottoms[-1] > 0 and num[i,3] < num[bottoms[-1], 3]:
                 bottoms[-1] = i
     return tops[1:], bottoms[1:]
+
+def jacks2(num, p):
+    L = 12
+    temps = []
+    tops = []
+    bottoms = []
+    i = L
+    while(i < len(num) - L):
+        if num[i,4] >= num[i-L : i+L, 4].max():
+            temps.append(i)
+            i += L - 1
+        i += 1
+    if len(temps) > 0:
+        tops.append(temps[0])
+        for i in range(1,len(temps)):
+            if i == len(temps) -1 :
+                z = 5
+            else:
+                z = 8
+            am = num[tops[-1]:temps[i],3].argmin()
+            if am >= z and temps[i] - am - tops[-1] >= z:
+                if i < len(temps) - 2: 
+                    if num[temps[i]:temps[i + 1],3].argmin() >= z:
+                        bottoms.append(am+tops[-1])
+                        tops.append(temps[i])
+                else:
+                    bottoms.append(am+tops[-1])
+                    tops.append(temps[i])
+    return tops, bottoms
 
 mp = {}
 names = {}
@@ -124,7 +227,7 @@ ds = []
 ds2 = {}
 G = 150
 for file in os.listdir(PATHO):
-    pr = '601003' in file
+    ppr = '601919' in file
     if file.startswith('sz.30'):
         continue
     try:
@@ -144,8 +247,20 @@ for file in os.listdir(PATHO):
     n2 = getM(ns, 60)
     if ns[-1] < n1 * 0.85 or ns[-1] < n2 * 0.85:
         continue
-    top, btm = jacks(num[mInd:], False)
-    if g3 <= 0.3 and len(top) >= 2:
+    top, btm = jacks2(num[mInd:], ppr)
+    if len(top) < 2:
+        continue
+    top, btm = num[np.array(top) + mInd], num[np.array(btm) + mInd]
+    # if len(btm) > 2 and btm[-1,1] * 2 < btm[-2,1] + top[len(btm) - 2, 1]:
+    #     continue
+    x = 0
+    for i in range(1, len(top)):
+        if top[i,1] >= top[i - 1,1] * 1.05:
+            x += 1
+    if ppr:
+        print(top[:,1], btm[:,1], btm[-1,1], btm[-2,1] + top[len(btm) - 2, 1])
+        print(x/(len(top)-1), btm[-1,1] >= (btm[-2,1] + top[len(btm) - 2, 1])/2)
+    if g3 <= 0.3 and x/(len(top)-1) >= 0.5:
         g6 = getGap(num, 60)
         g250 = getGap(num, 250)
         if file not in names.keys():
