@@ -27,13 +27,16 @@ def getGap0(d, g):
         if d[i, 1] >= getM(d[0:i,1],g):
             s = i
             break
-    
+    s = max(s, mInd)
+    if s - mInd > (len(d) - mInd) / 2:
+        return 0.5
     c = 0
     z = 0
     for z in range(s, len(d)):
         m = getM(d[0:z,1], g)
         if d[z,1] < m:
             c+=1
+    print(c, s, len(d), mInd, g, round(c/(len(d)-s),2), d[s])
     return round(c/(len(d)-s),2)
 def getGap(d, g):
     s = 0
@@ -245,7 +248,7 @@ ds = []
 ds2 = {}
 G = 150
 for file in os.listdir(PATHO):
-    ppr = '600222' in file
+    ppr = '600674' in file
     if file.startswith('sz.30'):
         continue
     try:
@@ -278,10 +281,10 @@ for file in os.listdir(PATHO):
                 x += 1
         x = x/(len(top)-1)
     # if ppr:
-    #     print(g3, g6, g250)
-    #     break
-    if (g3 <= 0.12 and g6 <= 0.15) or (g3 <= 0.25 and g6 <= 0.25 and x >= 0.6):
-        if g250 <= 0.3 and ns[-1]/getM(ns, 60) - 1 >= -0.11 and ns[-1]/getM(ns, 30) - 1 >= -0.11:
+    #     print(getGap0(num,30), getGap0(num,60), getGap0(num,250))
+    # else: continue
+    if (g3 <= 0.12 and g6 <= 0.15) or (g3 <= 0.3 and g6 <= 0.25 and x >= 0.6):
+        if g250 <= 0.2 and ns[-1]/getM(ns, 60) - 1 >= -0.11 and ns[-1]/getM(ns, 30) - 1 >= -0.11:
             if file not in names.keys():
                 names[file] = 'todo'
                 hys[file] = 'todo'
