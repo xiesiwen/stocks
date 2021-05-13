@@ -20,6 +20,21 @@ def getM(d, g):
         return 0
     return d.mean()
 R = {30:0.9, 60:0.95}
+def getGap0(d, g):
+    s = 0
+    mInd = d[len(d) - G:,1].argmin() + len(ns) - G
+    for i in range(mInd, len(d)):
+        if d[i, 1] >= getM(d[0:i,1],g):
+            s = i
+            break
+    
+    c = 0
+    z = 0
+    for z in range(s, len(d)):
+        m = getM(d[0:z,1], g)
+        if d[z,1] < m:
+            c+=1
+    return round(c/(len(d)-s),2)
 def getGap(d, g):
     s = 0
     mInd = d[len(d) - G:,1].argmin() + len(ns) - G
@@ -27,13 +42,16 @@ def getGap(d, g):
         if d[i, 1] >= getM(d[0:i,1],g):
             s = i
             break
+    s = max(s, mInd)
+    if s - mInd > (len(d) - mInd) / 2:
+        return 0.5
     c = 0
     z = 0
     for z in range(s, len(d)):
         m = getM(d[0:z,1], g)
         if d[z,1] < m:
             c+=1
-    return round(c/(len(d)-mInd),2)
+    return round(c/(len(d)-s),2)
 def getM2(d, g):
     if len(d) >= g:
         return d[len(d) -g : len(d)-1,1].mean()
@@ -227,7 +245,7 @@ ds = []
 ds2 = {}
 G = 150
 for file in os.listdir(PATHO):
-    ppr = '601919' in file
+    ppr = '600222' in file
     if file.startswith('sz.30'):
         continue
     try:
@@ -243,39 +261,40 @@ for file in os.listdir(PATHO):
         continue
     ns = np.array(ns,dtype='float32')
     g3 = getGap(num,30)
+    g6 = getGap(num, 60)
+    g250 = getGap(num, 250)
     n1 = getM(ns, 30)
     n2 = getM(ns, 60)
     if ns[-1] < n1 * 0.85 or ns[-1] < n2 * 0.85:
         continue
     top, btm = jacks2(num[mInd:], ppr)
     if len(top) < 2:
-        continue
-    top, btm = num[np.array(top) + mInd], num[np.array(btm) + mInd]
-    # if len(btm) > 2 and btm[-1,1] * 2 < btm[-2,1] + top[len(btm) - 2, 1]:
-    #     continue
-    x = 0
-    for i in range(1, len(top)):
-        if top[i,1] >= top[i - 1,1] * 1.05:
-            x += 1
-    if ppr:
-        print(top[:,1], btm[:,1], btm[-1,1], btm[-2,1] + top[len(btm) - 2, 1])
-        print(x/(len(top)-1), btm[-1,1] >= (btm[-2,1] + top[len(btm) - 2, 1])/2)
-    if g3 <= 0.3 and x/(len(top)-1) >= 0.5:
-        g6 = getGap(num, 60)
-        g250 = getGap(num, 250)
-        if file not in names.keys():
-            names[file] = 'todo'
-            hys[file] = 'todo'
-        if g6 <= 0.3 and g250 <= 0.3 and 'ST' not in names[file] and ns[-1]/getM(ns, 60) - 1 >= -0.11 and ns[-1]/getM(ns, 30) - 1 >= -0.11:
-            ds.append([file, names[file], len(ns) - mInd, g3,g6, round(ns[-1]/getM(ns, 30) - 1,3)])
-            if hys[file] not in ds2.keys():
-                ds2[hys[file]] = []
-            ds2[hys[file]].append(file)
+        x = 0
+    else:
+        top, btm = num[np.array(top) + mInd], num[np.array(btm) + mInd]
+        x = 0
+        for i in range(1, len(top)):
+            if top[i,1] >= top[i - 1,1] * 1.05:
+                x += 1
+        x = x/(len(top)-1)
+    # if ppr:
+    #     print(g3, g6, g250)
+    #     break
+    if (g3 <= 0.12 and g6 <= 0.15) or (g3 <= 0.25 and g6 <= 0.25 and x >= 0.6):
+        if g250 <= 0.3 and ns[-1]/getM(ns, 60) - 1 >= -0.11 and ns[-1]/getM(ns, 30) - 1 >= -0.11:
+            if file not in names.keys():
+                names[file] = 'todo'
+                hys[file] = 'todo'
+            if 'ST' not in names[file]:
+                ds.append([file, names[file], len(ns) - mInd, g3,g6, round(ns[-1]/getM(ns, 30) - 1,3)])
+                if hys[file] not in ds2.keys():
+                    ds2[hys[file]] = []
+                ds2[hys[file]].append((file, names[file]))
 ds.sort(key=lambda b:b[-1])
 res = sorted(ds2.items(), key=lambda item:len(item[1]), reverse=True)
 for z in ds:
     print(z)
-print(len(ds))
 for x in res:
-    if len(x[1]) >= len(res[9][1]):
+    if len(x[1]) >= len(res[min(10, len(res))][1]):
         print(x)
+print(len(ds))
