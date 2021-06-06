@@ -20,4 +20,5 @@ for file in os.listdir(PATHO):
         if np.all(x > 0) and np.all(x <= 4):
             print(file)
             c += 1
+            break
 print(c)
