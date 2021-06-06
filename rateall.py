@@ -155,7 +155,7 @@ def jacks(num, p):
                 bottoms[-1] = i
     return tops[1:], bottoms[1:]
 
-def jacks2(num, p):
+def jacks2(num):
     L = 12
     temps = []
     tops = []
@@ -183,7 +183,6 @@ def jacks2(num, p):
                     bottoms.append(am+tops[-1])
                     tops.append(temps[i])
     return tops, bottoms
-
 mp = {}
 names = {}
 hys = {}
@@ -200,123 +199,89 @@ for i in range(len(data)):
             mp[key] = []
         mp[key].append(data[i])
 
-scores = {}
-ds = {}
-GAP = 0
-# lines = [5,13,21,34,55,89,144,233]
-# for z in range( 0,LEN, 1):
-#     for i in mp:
-#         c = 0
-#         scs = 0
-#         for j in mp[i]:
-#             ss = j[0].lower().split(".")
-#             file = ss[1]+"."+ss[0]+".csv"
-            
-#             try:
-#                 if file not in ds:
-#                     dataset = pd.read_csv("D:/stocks-today/" + file, encoding='gbk').to_numpy()
-#                     ds[file] = dataset
-#                 # dataset = ds[file][0:len(ds[file]) - z + 1]
-#                 dataset = ds[file][0:len(ds[file]) - (LEN - z - 1) - GAP]
-#                 # dataset = ds[file]
-#                 if len(dataset) < 60:
-#                     continue
-#                 c += 1
-#                 for l in lines:
-#                     if dataset[-1,1] > getM2(dataset, l):
-#                         scs += 1
-#             except IOError:
-#                 qqq = 1
-#         if scores.get(i) == None:
-#             scores[i] = []
-#         scores[i].append(round(scs/c,2))
-# r = (sorted(scores.items(), key=lambda d: 0.35*np.mean(d[1]) + 0.65*np.mean(d[1][len(d[1]) - 10:len(d[1])]), reverse=True))
-# ss = []
-# for z in r[0:25]:
-#     print(z, np.mean(z[1]))
-#     ss.append(z[0])
-# print(ss)
-
-PATHO = "D:/stocks-today"
+YM = []
+mds = {}
+mds2 = {}
+for x in range(2011, 2021):
+    for y in range(1,13):
+        YM.append(str(x) + '-' + str(y).zfill(2))
+        mds[str(x) + '-' + str(y).zfill(2)] = []
+        mds2[str(x) + '-' + str(y).zfill(2)] = {}
+YM = ['2020-12']
+PATHO = "D:/stocks-all"
 hrs = ss
 c=0
 ks = 0
 thisMonth = 0
 win = 0
 aa = 0
-ds = []
-ds2 = {}
 G = 150
 for file in os.listdir(PATHO):
-    ppr = '600674' in file
     if file.startswith('sz.30'):
         continue
     try:
         dataset = pd.read_csv(PATHO + "/" + file, encoding='gbk')
     except:
         continue
-    num = dataset.to_numpy()
-    if num.shape[0] == 0:
+    numo = dataset.to_numpy()
+    if numo.shape[0] == 0:
         continue
-    ns = num[:,1]
-    mInd = ns[len(ns) - G:].argmin() + len(ns) - G
-    if len(ns) == 0 or len(ns) - mInd < 40 or ns[-1] >= 25 or len(ns) < 120:
-        continue
-    ns = np.array(ns,dtype='float32')
-    g3 = getGap(num,30)
-    g6 = getGap(num, 60)
-    g250 = getGap(num, 250)
-    n1 = getM(ns, 30)
-    n2 = getM(ns, 60)
-    if ns[-1] < n1 * 0.85 or ns[-1] < n2 * 0.85:
-        continue
-<<<<<<< HEAD
-    top, btm = jacks(num[mInd:], False)
-    if g3 <= 0.3 and len(top) >= 2:
-        if len(btm) >= 2 and num[btm[-1],1] < num[top[0],1] * 0.9:
-            continue
-        if len(btm) < 2 and num[-1,1] < num[top[0],1] * 0.9:
-            continue
-        g6 = getGap(num, 60)
-        g250 = getGap(num, 250)
-        if file not in names.keys():
-            names[file] = 'todo'
-            hys[file] = 'todo'
-        if g6 <= 0.3 and g250 <= 0.3 and 'ST' not in names[file] and ns[-1]/getM(ns, 60) - 1 >= -0.11 and ns[-1]/getM(ns, 30) - 1 >= -0.11:
-            ds.append([file, names[file], len(ns) - mInd, g3,g6, round(ns[-1]/getM(ns, 30) - 1,3)])
-            if hys[file] not in ds2.keys():
-                ds2[hys[file]] = []
-            ds2[hys[file]].append(file)
-=======
-    top, btm = jacks2(num[mInd:], ppr)
-    if len(top) < 2:
-        x = 0
-    else:
-        top, btm = num[np.array(top) + mInd], num[np.array(btm) + mInd]
-        x = 0
-        for i in range(1, len(top)):
-            if top[i,1] >= top[i - 1,1] * 1.05:
-                x += 1
-        x = x/(len(top)-1)
-    # if ppr:
-    #     print(getGap0(num,30), getGap0(num,60), getGap0(num,250))
-    # else: continue
-    if (g3 <= 0.12 and g6 <= 0.15) or (g3 <= 0.3 and g6 <= 0.25 and x >= 0.6):
-        if g250 <= 0.2 and ns[-1]/getM(ns, 60) - 1 >= -0.11 and ns[-1]/getM(ns, 30) - 1 >= -0.11:
-            if file not in names.keys():
-                names[file] = 'todo'
-                hys[file] = 'todo'
-            if 'ST' not in names[file]:
-                ds.append([file, names[file], len(ns) - mInd, g3,g6, round(ns[-1]/getM(ns, 30) - 1,3)])
-                if hys[file] not in ds2.keys():
-                    ds2[hys[file]] = []
-                ds2[hys[file]].append((file, names[file]))
->>>>>>> 479587311df9fe25b3e1fb3fe3149ef27c0e82e9
-ds.sort(key=lambda b:b[-1])
-res = sorted(ds2.items(), key=lambda item:len(item[1]), reverse=True)
-for z in ds:
-    print(z)
-for x in res:
-    if len(x[1]) >= len(res[min(10, len(res))][1]):
-        print(x)
-print(len(ds))
+    ti = 0
+    for index in range(0, len(numo)):
+        if ti < len(YM) and numo[index, 0].startswith(YM[ti]):
+            num = numo[:index]
+            if num.shape[0] == 0:
+                continue
+            ti += 1
+            ns = num[:,1]
+            mInd = ns[len(ns) - G:].argmin() + len(ns) - G
+            if len(ns) == 0 or len(ns) - mInd < 40 or ns[-1] >= 25 or len(ns) < 120:
+                continue
+            ns = np.array(ns,dtype='float32')
+            g3 = getGap(num,30)
+            g6 = getGap(num, 60)
+            g250 = getGap(num, 250)
+            n1 = getM(ns, 30)
+            n2 = getM(ns, 60)
+            if ns[-1] < n1 * 0.85 or ns[-1] < n2 * 0.85:
+                continue
+            
+            top, btm = jacks2(num[mInd:])
+            if len(top) < 2:
+                x = 0
+            else:
+                top, btm = num[np.array(top) + mInd], num[np.array(btm) + mInd]
+                x = 0
+                for i in range(1, len(top)):
+                    if top[i,1] >= top[i - 1,1] * 1.05:
+                        x += 1
+                x = x/(len(top)-1)
+            if (g3 <= 0.12 and g6 <= 0.15) or (g3 <= 0.3 and g6 <= 0.25 and x >= 0.6):
+                if g250 <= 0.2 and ns[-1]/getM(ns, 60) - 1 >= -0.11 and ns[-1]/getM(ns, 30) - 1 >= -0.11:
+                    if file not in names.keys():
+                        names[file] = 'todo'
+                        hys[file] = 'todo'
+                    mds[YM[ti-1]].append([file, names[file], len(ns) - mInd, g3,g6, round(ns[-1]/getM(ns, 30) - 1,3)])
+                    if hys[file] not in mds2[YM[ti-1]].keys():
+                        mds2[YM[ti-1]][hys[file]] = []
+                    mds2[YM[ti-1]][hys[file]].append((file, numo[index,1], numo[index+10,1], numo[index+20,1]))
+# ds.sort(key=lambda b:b[-1])
+
+# for z in ds:
+#     print(z)
+# i = 0
+for t in YM:
+    ds2 = mds2[t]
+    res = sorted(ds2.items(), key=lambda item:len(item[1]), reverse=True)
+    print(res)
+    p = 0
+    p1 = 0
+    p2 = 0
+    for x in res:
+        if len(x[1]) >= len(res[min(10, len(res))][1]):
+            print(np.array(x[1]))
+            for j in x[1]:
+                p += j[1]
+                p1 += j[2]
+                p2 += j[3]
+    print(t, p1/p, p2/p)
