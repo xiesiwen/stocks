@@ -207,7 +207,6 @@ for x in range(2011, 2021):
         YM.append(str(x) + '-' + str(y).zfill(2))
         mds[str(x) + '-' + str(y).zfill(2)] = []
         mds2[str(x) + '-' + str(y).zfill(2)] = {}
-YM = ['2020-12']
 PATHO = "D:/stocks-all"
 hrs = ss
 c=0
@@ -273,13 +272,11 @@ for file in os.listdir(PATHO):
 for t in YM:
     ds2 = mds2[t]
     res = sorted(ds2.items(), key=lambda item:len(item[1]), reverse=True)
-    print(res)
     p = 0
     p1 = 0
     p2 = 0
     for x in res:
         if len(x[1]) >= len(res[min(10, len(res))][1]):
-            print(np.array(x[1]))
             for j in x[1]:
                 p += j[1]
                 p1 += j[2]

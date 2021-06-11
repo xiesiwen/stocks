@@ -248,7 +248,7 @@ ds = []
 ds2 = {}
 G = 150
 for file in os.listdir(PATHO):
-    ppr = '600674' in file
+    ppr = '000807' in file
     if file.startswith('sz.30'):
         continue
     try:
@@ -316,7 +316,9 @@ ds.sort(key=lambda b:b[-1])
 res = sorted(ds2.items(), key=lambda item:len(item[1]), reverse=True)
 for z in ds:
     print(z)
+i = 0
 for x in res:
     if len(x[1]) >= len(res[min(10, len(res))][1]):
         print(x)
-print(len(ds))
+        i += len(x[1])
+print(len(ds), i)
