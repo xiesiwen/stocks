@@ -13,13 +13,8 @@ def setDir(filepath):
         os.mkdir(filepath)
 def writeStock(stock, key):
     rs = bs.query_history_k_data_plus(stock,
-<<<<<<< Updated upstream
         "date,close,open,low,high,volume,pctChg,isST",
         start_date = '2021-01-01', end_date=str(datetime.date.today()),
-=======
-        "date,close,open,low,high,volume",
-        start_date = '2010-01-01', end_date=str(datetime.date.today()),
->>>>>>> Stashed changes
         frequency=key, adjustflag="2")
     #### 打印结果集 ####
     data_list = []
@@ -86,7 +81,7 @@ path = "./stock-today"
 
 lg = bs.login()
 # 显示登陆返回信息
-dataset = pd.read_csv("./all_stock.csv", encoding='gbk')
+dataset = pd.read_csv("./stock/all_stock.csv", encoding='gbk')
 for row in dataset.itertuples():
     if row[1].startswith('sh.60') or row[1].startswith('sh.68') or row[1].startswith('sz.00') or row[1].startswith('sz.30'):
         print(row[1])
