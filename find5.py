@@ -2,6 +2,11 @@ import numpy as np
 import pandas as pd
 import os
 
+def getM2(d, g):
+    if len(d) >= g:
+        return d[len(d) -g : len(d)-1,1].mean()
+    return d[:,1].mean()
+
 PATHO = "./stock-today"
 c =0
 for file in os.listdir(PATHO):
@@ -12,7 +17,7 @@ for file in os.listdir(PATHO):
     except:
         continue
     num = dataset.to_numpy()
-    if num.shape[0] < 100:
+    if num.shape[0] < 100 or num[-1,1] > 20 or num[-1,1] < getM2(num, 60):
         continue
     n = num[:,6]
     for i in range(0, 5):

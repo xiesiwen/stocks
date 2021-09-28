@@ -270,24 +270,6 @@ for file in os.listdir(PATHO):
     n2 = getM(ns, 60)
     if ns[-1] < n1 * 0.85 or ns[-1] < n2 * 0.85:
         continue
-<<<<<<< HEAD
-    top, btm = jacks(num[mInd:], False)
-    if g3 <= 0.3 and len(top) >= 2:
-        if len(btm) >= 2 and num[btm[-1],1] < num[top[0],1] * 0.9:
-            continue
-        if len(btm) < 2 and num[-1,1] < num[top[0],1] * 0.9:
-            continue
-        g6 = getGap(num, 60)
-        g250 = getGap(num, 250)
-        if file not in names.keys():
-            names[file] = 'todo'
-            hys[file] = 'todo'
-        if g6 <= 0.3 and g250 <= 0.3 and 'ST' not in names[file] and ns[-1]/getM(ns, 60) - 1 >= -0.11 and ns[-1]/getM(ns, 30) - 1 >= -0.11:
-            ds.append([file, names[file], len(ns) - mInd, g3,g6, round(ns[-1]/getM(ns, 30) - 1,3)])
-            if hys[file] not in ds2.keys():
-                ds2[hys[file]] = []
-            ds2[hys[file]].append(file)
-=======
     top, btm = jacks2(num[mInd:], ppr)
     if len(top) < 2:
         x = 0
@@ -311,7 +293,6 @@ for file in os.listdir(PATHO):
                 if hys[file] not in ds2.keys():
                     ds2[hys[file]] = []
                 ds2[hys[file]].append((file, names[file]))
->>>>>>> 479587311df9fe25b3e1fb3fe3149ef27c0e82e9
 ds.sort(key=lambda b:b[-1])
 res = sorted(ds2.items(), key=lambda item:len(item[1]), reverse=True)
 for z in ds:

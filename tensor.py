@@ -5,19 +5,19 @@ def downloadBK():
     stock_profit_forecast_df = ak.stock_board_concept_name_ths().to_numpy()
     print(stock_profit_forecast_df[:,0])
     for x in stock_profit_forecast_df[:,0]:
-        # try :
+        try :
             print(x)
             stock_board_industry_index_ths_df = ak.stock_board_concept_index_ths(symbol=x)
             print()
-            np.save("./hankuai/" + x, stock_board_industry_index_ths_df.to_numpy())
-        # except Exception:
-            # continue
-    for f in os.listdir('./hankuai'):
-        n1 = np.load('./hankuai/' + f, allow_pickle=True)
+            np.save("./bankuai/" + x, stock_board_industry_index_ths_df.to_numpy())
+        except Exception:
+            continue
+    for f in os.listdir('./bankuai'):
+        n1 = np.load('./bankuai/' + f, allow_pickle=True)
         if str(n1[-1,0]) != '2021-06-11 00:00:00':
             stock_board_industry_index_ths_df = ak.stock_board_concept_index_ths(symbol=f.split('.')[0])
             print(f, 'd', stock_board_industry_index_ths_df.to_numpy()[-1,0])
-            np.save("./hankuai/" + f.split('.')[0], stock_board_industry_index_ths_df.to_numpy())
+            np.save("./bankuai/" + f.split('.')[0], stock_board_industry_index_ths_df.to_numpy())
             print(f, n1[-1,0])
 def donwloadHY():
     stock_board_industry_name_ths = ak.stock_board_industry_name_ths().to_numpy()
@@ -61,6 +61,6 @@ def sortS(path):
             else :
                 res[k] += 1
     print(sorted(res.items(), key = lambda k:(k[1]), reverse=True))
-# downloadBK()
-stock_board_concept_index_ths_df = ak.stock_board_concept_index_ths(symbol="丙烯酸")
-print(stock_board_concept_index_ths_df)
+downloadBK()
+# stock_board_concept_index_ths_df = ak.stock_board_concept_index_ths(symbol="丙烯酸")
+# print(stock_board_concept_index_ths_df)
