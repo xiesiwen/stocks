@@ -1,10 +1,12 @@
 import baostock as bs
 import pandas as pd
 import numpy as np
+import akshare as ak
 import datetime
 import os
 import shutil
 path = "./stock-today/"
+columns = "date,close,open,low,high,volume,pctChg,isST"
 def setDir(filepath):
     if not os.path.exists(filepath):
         os.mkdir(filepath)
@@ -13,7 +15,7 @@ def setDir(filepath):
         os.mkdir(filepath)
 def writeStock(stock, key):
     rs = bs.query_history_k_data_plus(stock,
-        "date,close,open,low,high,volume,pctChg,isST",
+        columns,
         start_date = '2021-01-01', end_date=str(datetime.date.today()),
         frequency=key, adjustflag="2")
     #### 打印结果集 ####
@@ -37,9 +39,12 @@ def patch(stock, key):
             if len(num) > 0 and num.shape[1] == 6:
                 start = num[-1,0]
         except:
-            q = 1
-    rs = bs.query_history_k_data_plus(stock,
-        "date,close,open,low,high,volume,pctChg,isST",
+            writeStock(stock, key)
+            return
+    else:
+        writeStock(stock, key)
+        return
+    rs = bs.query_history_k_data_plus(stock, columns,
         start_date = start, end_date=str(datetime.date.today()),
         frequency=key, adjustflag="2")
     #### 打印结果集 ####
@@ -81,10 +86,13 @@ path = "./stock-today"
 
 lg = bs.login()
 # 显示登陆返回信息
-dataset = pd.read_csv("./stock/all_stock.csv", encoding='gbk')
-for row in dataset.itertuples():
-    if row[1].startswith('sh.60') or row[1].startswith('sh.68') or row[1].startswith('sz.00') or row[1].startswith('sz.30'):
-        print(row[1])
-        writeStock(row[1], 'd')
+rs = bs.query_stock_basic()
+data_list = []
+while (rs.error_code == '0') & rs.next():
+    data_list.append(rs.get_row_data())
+for row in data_list:
+    if row[0].startswith('sh.60') or row[0].startswith('sz.00'):
+        print(row[0])
+        patch(row[0], 'd')
 #### 登出系统 ####
 bs.logout()
