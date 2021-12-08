@@ -12,3 +12,27 @@ x = [x for x in range(1,len(res) + 1)]
 plt.plot(x,res)
 plt.plot(x, [2342 for x in range(0,len(res))])
 plt.show()
+
+
+import baostock as bs
+import pandas as pd
+
+# 登陆系统
+lg = bs.login()
+rs = bs.query_history_k_data_plus("sh.000001",
+    "date,code,open,high,low,close,preclose,volume,amount,pctChg",
+    start_date='2021-01-01', end_date='2021-12-07', frequency="d")
+print('query_history_k_data_plus respond error_code:'+rs.error_code)
+print('query_history_k_data_plus respond  error_msg:'+rs.error_msg)
+
+# 打印结果集
+data_list = []
+while (rs.error_code == '0') & rs.next():
+    # 获取一条记录，将记录合并在一起
+    data_list.append(rs.get_row_data())
+result = pd.DataFrame(data_list, columns=rs.fields)
+# result.to_csv("D:\\history_Index_k_data.csv", index=False)
+print(result)
+
+# 登出系统
+bs.logout()
