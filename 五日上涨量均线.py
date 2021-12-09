@@ -1,38 +1,57 @@
-import matplotlib.pyplot as plt
+import os 
 import numpy as np
-
+import pandas as pd
+import matplotlib.pyplot as plt
+c = 0
+path = "./stock-today/"
+sh = pd.read_csv(path + "sh.000001.csv", encoding='gbk').to_numpy()
+map = [0 for _ in range(0,len(sh))]
+mi = [0 for _ in range(0,len(sh))]
+for file in os.listdir(path):
+    if file.startswith(('sh.60','sz.00','sz.30','sh.68')):
+        dataset = pd.read_csv(path + file, encoding='gbk')
+        num = dataset.to_numpy()
+        if len(num) >= 225 and num[0,0] == sh[0,0]:
+            for i in range(30, 225):
+                if num[i, 1] >= np.max(num[0:i,1]):
+                    map[i] += 1
+                if num[i, 1] <= np.min(num[0:i,1]):
+                    mi[i] += 1
+        c+=1
+print(c)
+v = map
 L = 5
-lz = [2515,1600,902,1033,3500,3111,1111,2985,3311,1974,2591,3098,2727,3014,2710,3023,1230,3828,1277,3295,2417,2396,
-2304,1976,1545,1615,2884,3220,1097,2642,958,1715]
 res = []
-for i in range(L, len(lz) + 1):
-    res.append(np.mean(lz[i-L:i-1]))
-print(res)
-x = [x for x in range(1,len(res) + 1)]
+rm = []
+for i in range(L, len(v)):
+    res.append(np.mean(v[i-L+1:i+1]))
+for i in range(L, len(mi)):
+    rm.append(np.mean(mi[i-L+1:i+1]))
+x = [x for x in range(L, len(map))]
 plt.plot(x,res)
-plt.plot(x, [2342 for x in range(0,len(res))])
+plt.plot(x,rm)
+plt.plot(x,sh[L:,1] - 3350)
 plt.show()
 
-
-import baostock as bs
-import pandas as pd
-
-# 登陆系统
-lg = bs.login()
-rs = bs.query_history_k_data_plus("sh.000001",
-    "date,code,open,high,low,close,preclose,volume,amount,pctChg",
-    start_date='2021-01-01', end_date='2021-12-07', frequency="d")
-print('query_history_k_data_plus respond error_code:'+rs.error_code)
-print('query_history_k_data_plus respond  error_msg:'+rs.error_msg)
-
-# 打印结果集
-data_list = []
-while (rs.error_code == '0') & rs.next():
-    # 获取一条记录，将记录合并在一起
-    data_list.append(rs.get_row_data())
-result = pd.DataFrame(data_list, columns=rs.fields)
-# result.to_csv("D:\\history_Index_k_data.csv", index=False)
-print(result)
-
-# 登出系统
-bs.logout()
+# num = sh.to_numpy()[L-1:]
+# if len(num) != len(res):
+#     print("error")
+# else:
+#     print("equals")
+# b = 0
+# r = []
+# z = 0
+# R = 1
+# for i in range(0, len(res)):
+#     if res[i] < c*0.333 and b == 0:
+#         b = num[i, 1]
+#         print("buy " + num[i,0])
+#     if res[i] > c*0.666 and b > 0:
+#         w = (num[i,1]/b - 1) * 100
+#         R *= (num[i,1]/b)
+#         if w > 0:
+#             z += 1
+#         print("sale " + num[i,0], w)
+#         r.append(w)
+#         b = 0
+# print(r, z/len(r), R)
