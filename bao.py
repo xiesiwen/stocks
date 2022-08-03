@@ -1,7 +1,6 @@
 import baostock as bs
 import pandas as pd
 import numpy as np
-import akshare as ak
 import datetime
 import os
 import shutil
@@ -63,10 +62,12 @@ def patch(stock, key):
         result = pd.DataFrame(data_list, columns=rs.fields)
         result.to_csv(p, index=False)
     else:
-        # print(num.shape, np.array(data_list).shape)
         if len(data_list) < 2:
             return
-        result = np.append(num, data_list[1:], axis=0)
+        if len(num) == 0:
+            result = data_list
+        else: 
+            result = np.append(num, data_list[1:], axis=0)
         pd.DataFrame(result, columns=rs.fields).to_csv(p, index=False)
 
 def writeStock30(stock):
@@ -96,8 +97,12 @@ rs = bs.query_stock_basic()
 data_list = []
 while (rs.error_code == '0') & rs.next():
     data_list.append(rs.get_row_data())
+s = False
 for row in data_list:
-    if row[0].startswith('sh.60') or row[0].startswith('sz.00'):
+    s = row[0].startswith('sh.68')
+    # if not s:
+    #     continue
+    if row[0].startswith('sh.60') or row[0].startswith('sz.00') or row[0].startswith('sz.30') or row[0].startswith('sh.68'):
         patch(row[0], 'd')
 #### 登出系统 ####
 bs.logout()
